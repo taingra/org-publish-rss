@@ -60,8 +60,6 @@ You can run this automatically by adding org-publish-auto-rss as a
 that project.  This is the final publishing step so uploading the RSS
 file will need to be handled by a separate project, see example project.
 
-*
-
 * Why not use ox-rss.el?
 Using an org exporter adds an additional export steps and
 configuration that is unnecessary for a basic org-publish project.
@@ -74,21 +72,27 @@ The clever [[https://writepermission.com/org-blogging-rss-feed.html][ox-rss.el s
 is an alternate to this package.  However it requires a lot of setup
 that I was trying to avoid.
 
+* Outstanding Development Goals
+
+** TODO Optionally generate GUID tags
+** TODO Add global customization variables
+** TODO Add ability to export with full HTML post content
+
 * License GPLv3
 
 See LICENSE file.
 
 #+begin_quote
-;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+This file is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-;; For a full copy of the GNU General Public License
-;; see <http://www.gnu.org/licenses/>.
+For a full copy of the GNU General Public License
+see <http://www.gnu.org/licenses/>.
 #+end_quote
