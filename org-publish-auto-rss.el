@@ -116,6 +116,8 @@
 
 (require 'ox-publish)
 
+(defvar org-publish-auto-rss-version "0.1")
+
 (defun opar--insert-generate-guid ()
   "Generate GUID tag for an `org-mode' file."
   ;; TODO optionally insert guid tag similar to ox-rss.el
@@ -178,15 +180,15 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 <description><![CDATA[%s]]></description>
 <language>%s</language>
 <lastBuildDate>%s</lastBuildDate>
-<generator>Emacs %s auto-rss.el %s</generator>\n"
+<generator>Emacs %s org-publish-auto-rss.el %s</generator>\n"
 	     (symbol-name org-html-coding-system)
 	     title
 	     link
 	     description
 	     language
 	     (format-time-string "%a, %d %b %Y %H:%M:%S %z")
-	     emacs-version org-publish-auto-rss)
-
+	     emacs-version
+	     org-publish-auto-rss-version)
      (when webmaster
        "<webMaster>%s</webMaster>\n")
      (when editor
