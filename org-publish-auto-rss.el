@@ -42,11 +42,16 @@
 ;; separate project will need to upload the file using
 ;; `org-publish-attachment'.
 ;;
-;; Properties:
+;; Required `org-publish-project-alist' Properties:
 ;;
-;; org-publish-auto-rss adds the following properties to `org-publish-project-alist'
+;;   `:html-link-home' (required)
 ;;
-;;   `:auto-rss'
+;;    Root website URL (e.g. https://example.com), required to
+;;    determine the root URL of all posts.
+;;
+;; Properties added for `org-publish-auto-rss':
+;;
+;;   `:auto-rss' (required)
 ;;
 ;;    Enables RSS feed generation.
 ;;
@@ -65,8 +70,9 @@
 ;;
 ;;   `:rss-link'  (required)
 ;;
-;;   The URL to the website corresponding to the channel (will use
-;;   `:html-link-up' if blank).
+;;   The URL to the webpage corresponding to the RSS channel (will use
+;;   `:html-link-up' if blank).  Useful if feed is specific to a
+;;   specific sub-section like https://example.com/blog/
 ;;
 ;;   `:rss-webmaster'
 ;;
