@@ -105,10 +105,11 @@
 ;;          :publishing-directory "~/public_html/"
 ;;          :publishing-function  org-html-publish-to-html
 ;;
+;;          :html-link-home "https://example.com"
+;;
 ;;          :auto-rss t
 ;;          :rss-title "Example Posts"
 ;;          :rss-description "My example website."
-;;          :rss-link "https://example.com"
 ;;
 ;;          :completion-function org-publish-auto-rss)
 ;;         ("static"
