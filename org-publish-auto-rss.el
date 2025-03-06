@@ -197,9 +197,9 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	     emacs-version
 	     org-publish-auto-rss-version)
      (when webmaster
-       "<webMaster>%s</webMaster>\n")
+       (format "<webMaster>%s</webMaster>\n" webmaster))
      (when editor
-       "<managingEditor>%s</managingEditor>\n")
+       (format "<managingEditor>%s</managingEditor>\n") editor)
      (when image
        (format "<image>
 <url>%s</url>
