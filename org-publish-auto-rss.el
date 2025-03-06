@@ -210,11 +210,13 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
      ;; According to the RSS spec order does not matter so we
      ;; do not need to waste effort here sorting posts.
      (apply #'concat
-	    (mapcar
-	     (lambda (entry)
-	       (let* ((relpath (string-remove-prefix base-dir entry))
-		      (post-url (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
-		 (format "<item>
+	          (mapcar
+	           (lambda (entry)
+	             (let* ((relpath
+                       (string-remove-prefix (expand-file-name base-dir) entry))
+		                  (post-url
+                       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
+		             (format "<item>
 <title>%s</title>
 <link>%s</link>
 <pubDate>%s</pubDate>
