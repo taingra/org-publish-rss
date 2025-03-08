@@ -17,7 +17,7 @@ options are:
 - :rss-description :: Channel description of the RSS feed.
 
 - :rss-link :: The URL to the website corresponding to the RSS
-  channel.  Will use :html-link-up if blank.
+  channel.  Will use :html-link-home if blank.
 
 For complete list of options see the Commentary section of
 [[file:org-publish-auto-rss.el]].
@@ -53,6 +53,9 @@ M-x org-publish-auto-rss [RET] PROJECT
 
 You may get a cache error, retry this after recently publishing the
 corresponding project.
+
+Verify that the generated urls for the articles' `<link>' tags are correct. If
+not, adjust the `:rss-root-url' property.
 
 ** Run Automatically when Publishing
 

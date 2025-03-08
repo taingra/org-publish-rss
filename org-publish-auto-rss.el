@@ -42,13 +42,6 @@
 ;; separate project will need to upload the file using
 ;; `org-publish-attachment'.
 ;;
-;; Required `org-publish-project-alist' Properties:
-;;
-;;   `:html-link-home' (required)
-;;
-;;    Root website URL (e.g. https://example.com), required to
-;;    determine the root URL of all posts.
-;;
 ;; Properties added for `org-publish-auto-rss':
 ;;
 ;;   `:auto-rss' (required)
@@ -71,8 +64,14 @@
 ;;   `:rss-link'  (required)
 ;;
 ;;   The URL to the webpage corresponding to the RSS channel (will use
-;;   `:html-link-up' if blank).  Useful if feed is specific to a
-;;   specific sub-section like https://example.com/blog/
+;;   `:html-link-home' if not set).
+;;
+;;   `:rss-root-url'  (required)
+;;
+;;   Root URL used to construct the complete URL of the published posts. It
+;;   should be the URL under which the `publishing-directory' of the project is
+;;   accessible on the internet (if not set, will first use `:html-link-up',
+;;   then `:rss-link').
 ;;
 ;;   `:rss-webmaster'
 ;;
@@ -171,7 +170,11 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	(webmaster (org-publish-property :rss-webmaster project))
 	(editor    (org-publish-property :rss-editor project))
 	(image (org-publish-property :rss-image project))
-	(url (org-publish-property :html-link-up project))
+	(url
+   (or (org-publish-property :rss-root-url project)
+       (org-publish-property :html-link-up project)
+       (org-publish-property :rss-link       project)
+       (org-publish-property :html-link-home project)))
 	(base-files (opar--get-base-files project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project))))
