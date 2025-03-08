@@ -83,6 +83,12 @@
 ;;
 ;;   Email address for person responsible for editorial content.
 ;;
+;;   `:rss-filter-fn'
+;;
+;;   Function used to filter files that should not get an entry in the rss feed.
+;;   It takes the absolute filename of the file being published as argument and
+;;   should return nil if the file should not get an entry on the feed.
+;;
 ;;   `:rss-image'
 ;;
 ;;   RSS image, either a complete hyper link or a link relative from
@@ -136,7 +142,9 @@
 Exclude the `:auto-sitemap' and `:makeindex' files."
   (let* ((base-dir (file-name-as-directory
 		    (org-publish-property :base-directory project)))
-	 (base-files (org-publish-get-base-files project)))
+         (filter-fn
+          (or (org-publish-property :rss-filter-fn project) (lambda (fn) t)))
+	 (base-files (seq-filter filter-fn (org-publish-get-base-files project))))
     (when (org-publish-property :auto-sitemap project)
       (delete (expand-file-name
 	       (or (org-publish-property :sitemap-filename project)
