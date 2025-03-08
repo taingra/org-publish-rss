@@ -213,10 +213,10 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	          (mapcar
 	           (lambda (entry)
 	             (let* ((relpath
-                       (string-remove-prefix (expand-file-name base-dir) entry))
-		                  (post-url
-                       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
-		             (format "<item>
+			     (string-remove-prefix (expand-file-name base-dir) entry))
+		            (post-url
+			     (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
+		       (format "<item>
 <title>%s</title>
 <link>%s</link>
 <pubDate>%s</pubDate>
