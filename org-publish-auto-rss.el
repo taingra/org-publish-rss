@@ -178,6 +178,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	(base-files (opar--get-base-files project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project))))
+	(items-xml ""))
     (unless (and title link description)
       (error "RSS requires :rss-title, :rss-link and :rss-description"))
     (concat
@@ -220,26 +221,25 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	image title link))
      ;; According to the RSS spec order does not matter so we
      ;; do not need to waste effort here sorting posts.
-     (apply #'concat
-	          (mapcar
-	           (lambda (entry)
-	             (let* ((relpath
-			     (string-remove-prefix (expand-file-name base-dir) entry))
-		            (post-url
-			     (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
+     (dolist (file base-files items-xml)
+       (let* ((relpath
+	       (string-remove-prefix (expand-file-name base-dir) file))
+	      (post-url
+	       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
+	 (setq items-xml
+	       (concat items-xml
 		       (format "<item>
 <title>%s</title>
 <link>%s</link>
 <pubDate>%s</pubDate>
 <guid>%s</guid>
 </item>\n"
-			 ; FIXME cache empty error
-			 (org-publish-find-title entry project)
-			 post-url
-			 (format-time-string "%a, %d %b %Y %H:%M:%S %z"
-					     (org-publish-find-date entry project))
-			 post-url)))
-	     base-files))
+			       ;; FIXME cache empty error
+			       (org-publish-find-title file project)
+			       post-url
+			       (format-time-string "%a, %d %b %Y %H:%M:%S %z"
+						   (org-publish-find-date file project))
+			       post-url)))))
      "</channel>\n"
      "</rss>")))
 
