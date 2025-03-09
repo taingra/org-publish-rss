@@ -52,26 +52,33 @@
 ;;
 ;;   Generated RSS file's filename (default rss.xml).
 ;;
-;;   `:rss-title'  (required)
+;;   `:rss-root-url'  (recommended)
+;;
+;;   Root URL where posts will reside on your website.  If your
+;;   project is published to example.com/blog/some-post.html then this
+;;   would be "https://example.com/blog".  If blank falls back to
+;;   `:html-link-up', `:html-link-home', then `:rss-link'.  If your
+;;   RSS generates with broken links try this setting.
+;;
+;;   `:rss-title'  (required by RSS spec)
 ;;
 ;;   Channel title of the RSS feed (will use `:sitemap-title' if
 ;;   blank).
 ;;
-;;   `:rss-description'  (required)
+;;   `:rss-description'  (required by RSS spec)
 ;;
 ;;   Channel description of the RSS feed.
 ;;
-;;   `:rss-link'  (required)
+;;   `:rss-link'  (required by RSS spec)
 ;;
 ;;   The URL to the webpage corresponding to the RSS channel (will use
 ;;   `:html-link-home' if not set).
 ;;
-;;   `:rss-root-url'  (required)
+;;   `:rss-image'
 ;;
-;;   Root URL used to construct the complete URL of the published posts. It
-;;   should be the URL under which the `publishing-directory' of the project is
-;;   accessible on the internet (if not set, will first use `:html-link-up',
-;;   then `:rss-link').
+;;   RSS image, either a complete hyper link or a link relative from
+;;   the project directory.  Max size: width 144 pixels, height 400
+;;   pixels.
 ;;
 ;;   `:rss-webmaster'
 ;;
@@ -82,21 +89,15 @@
 ;;
 ;;   Email address for person responsible for editorial content.
 ;;
+;;   `:copyright'
+;;
+;;   Copyright notice for content in the channel.
+;;
 ;;   `:rss-filter-function'
 ;;
 ;;   Function used to filter files that should not get an entry in the rss feed.
 ;;   It takes the absolute filename of the file being published as argument and
 ;;   should return nil if the file should not get an entry on the feed.
-;;
-;;   `:rss-image'
-;;
-;;   RSS image, either a complete hyper link or a link relative from
-;;   the project directory.  Max size: width 144 pixels, height 400
-;;   pixels.
-;;
-;;   `:copyright'
-;;
-;;   Copyright notice for content in the channel.
 ;;
 ;; Example configuration:
 ;;
@@ -171,16 +172,16 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	(editor    (org-publish-property :rss-editor project))
 	(image (org-publish-property :rss-image project))
 	(url
-   (or (org-publish-property :rss-root-url project)
-       (org-publish-property :html-link-up project)
-       (org-publish-property :rss-link       project)
-       (org-publish-property :html-link-home project)))
+	 (or (org-publish-property :rss-root-url project)
+	     (org-publish-property :html-link-up project)
+	     (org-publish-property :html-link-home project)
+	     (org-publish-property :rss-link       project)))
 	(base-files (opar--get-base-files project))
 	(base-dir (file-name-as-directory
-		   (org-publish-property :base-directory project))))
+		   (org-publish-property :base-directory project)))
 	(items-xml ""))
     (unless (and title link description)
-      (error "RSS requires :rss-title, :rss-link and :rss-description"))
+      (error "RSS spec requires a title, link, and description"))
     (concat
      (format "<?xml version=\"1.0\" encoding=\"%s\"?>
  <rss version=\"2.0\"
