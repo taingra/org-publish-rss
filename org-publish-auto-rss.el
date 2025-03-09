@@ -83,7 +83,7 @@
 ;;
 ;;   Email address for person responsible for editorial content.
 ;;
-;;   `:rss-filter-fn'
+;;   `:rss-filter-function'
 ;;
 ;;   Function used to filter files that should not get an entry in the rss feed.
 ;;   It takes the absolute filename of the file being published as argument and
@@ -143,7 +143,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
   (let* ((base-dir (file-name-as-directory
 		    (org-publish-property :base-directory project)))
          (filter-fn
-          (or (org-publish-property :rss-filter-fn project) (lambda (fn) t)))
+          (or (org-publish-property :rss-filter-function project) (lambda (fn) t)))
 	 (base-files (seq-filter filter-fn (org-publish-get-base-files project))))
     (when (org-publish-property :auto-sitemap project)
       (delete (expand-file-name
