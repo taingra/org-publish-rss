@@ -131,6 +131,22 @@
 
 (defvar org-publish-auto-rss-version "0.1")
 
+(defgroup org-publish-auto-rss nil
+  "Options specific to Org publish with automatic RSS."
+  :tag "Org publish auto-rss"
+  :group 'org-export)
+
+(defcustom org-publish-auto-rss-indent-xml t
+  "Indent exported RSS XML file."
+  :type 'boolean
+  :group 'org-publish-auto-rss)
+
+(defcustom org-publish-auto-rss-url-as-guid t
+  "Use post URL as GUID for RSS feed."
+  :type 'boolean
+  :group 'org-publish-auto-rss)
+
+
 (defun opar--insert-generate-guid ()
   "Generate GUID tag for an `org-mode' file."
   ;; TODO optionally insert guid tag similar to ox-rss.el
@@ -270,6 +286,9 @@ alist (see `org-publish-project-alist' variable)."
 	       (org-publish-property :base-directory project)))))
 	(with-temp-buffer
 	  (insert rss)
+	  (when org-publish-auto-rss-indent-xml
+	    (xml-mode)
+	    (indent-region (point-min) (point-max)))
 	  (write-file filename))))))
 
 
