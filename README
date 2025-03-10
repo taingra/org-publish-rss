@@ -1,11 +1,11 @@
-#+TITLE: Org Publish Auto RSS
+#+TITLE: Org Publish RSS
 
 Quickly add RSS feeds to org-publish projects.
 
 This works similar to the :auto-sitemap publishing option.
 
 * Setup
-To use org-publish-auto-rss.el you must add the configuration options
+To use org-publish-rss.el you must add the configuration options
 to your org-publish-project-alist settings.  The minimum required
 options are:
 
@@ -20,7 +20,7 @@ options are:
   channel.  Will use :html-link-home if blank.
 
 For complete list of options see the Commentary section of
-[[file:org-publish-auto-rss.el]].
+[[file:org-publish-rss.el]].
 
 ** Example Project
 #+begin_src emacs-lisp
@@ -37,7 +37,7 @@ For complete list of options see the Commentary section of
 	   :rss-title "Example Posts"
 	   :rss-description "My example website."
 
-	   :completion-function org-publish-auto-rss
+	   :completion-function org-publish-rss
 	  ("static"
 	   :base-directory "~/Documents/org/website/"
 	   :base-extension "css\\|jpg\\|png\||gif"
@@ -49,7 +49,7 @@ For complete list of options see the Commentary section of
 
 ** Running
 
-M-x org-publish-auto-rss [RET] PROJECT
+M-x org-publish-rss [RET] PROJECT
 
 You may get a cache error, retry this after recently publishing the
 corresponding project.
@@ -59,7 +59,7 @@ not, adjust the `:rss-root-url' property.
 
 ** Run Automatically when Publishing
 
-You can run this automatically by adding org-publish-auto-rss as a
+You can run this automatically by adding org-publish-rss as a
 :completion-function which will run after any publishing action for
 that project.  This is the final publishing step so uploading the RSS
 file will need to be handled by a separate project, see example project.
