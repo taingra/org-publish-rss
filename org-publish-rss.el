@@ -156,6 +156,38 @@
   ;; TODO optionally insert guid tag similar to ox-rss.el
   )
 
+(defcustom org-publish-rss-insert-id-top nil
+  "Insert #+ID tag at top of file.  Default nil is below all other #+KEYS."
+  :type 'boolean
+  :group 'org-publish-rss)
+
+(defun org-publish-rss-insert-id (&optional file id-prefix)
+  "Generate ID tag in an Org FILE.
+
+See `org-id-method' to customize how this ID is generated.
+
+ID-PREFIX can specify the prefix for the id, the default is given by the
+variable ‘org-id-prefix’.  Use ‘none’ to force no prefix even if
+‘org-id-prefix’ is set."
+  (interactive)
+  (let ((new-id (org-id-new id-prefix)))
+    (save-excursion
+      (save-restriction
+	(widen)
+	(cond
+	 ((not (re-search-forward "^#\\+ID:" (point-max) t))
+	  (goto-char (point-min))
+	  (unless org-publish-rss-insert-id-top
+	    ;; FIXME Maybe should consider blank lines between #+keywords
+	    (while (org-at-keyword-p)
+	      (forward-line)))
+	  (insert "#+ID:" new-id "\n")
+	  (message "Set #+ID: %s" new-id))
+	 ((not (re-search-forward "[:alnum:]+" (line-end-position) t))
+	  (insert (org-id-new id-prefix))
+	  (message "Set #+ID: %s" new-id))
+	 (t (message "#+ID already set, skipping.")))))))
+
 (defun opar--get-base-files (project)
   "Return base files for a PROJECT.
 
