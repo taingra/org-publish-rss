@@ -98,9 +98,9 @@
 ;;   Function used to filter files that should not get an entry in the rss feed.
 ;;   It takes the absolute filename of the file being published as argument and
 ;;   should return nil if the file should not get an entry on the feed.
-;;
-;; Example configuration:
-;;
+
+;;;; Example Configuration:
+
 ;; (require 'ox-publish)
 ;; (require 'org-publish-rss)
 ;;
@@ -124,6 +124,10 @@
 ;;          :publishing-directory "~/public_html/"
 ;;          :publishing-function org-publish-attachment)
 ;;         ("example.com" :components ("content" "static"))))
+
+;; When publishing use: org-publish-current-project (C-c C-e P p)
+;; which will automatically check for the meta project with :components
+;; and will ensure all related projects files are published.
 
 ;;; Code:
 

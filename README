@@ -22,6 +22,23 @@ options are:
 For complete list of options see the Commentary section of
 [[file:org-publish-rss.el]].
 
+** Running
+
+M-x org-publish-rss [RET] PROJECT
+
+You may get a cache error, retry this after recently publishing the
+corresponding project.
+
+Verify that the generated urls for the articles' `<link>' tags are correct. If
+not, adjust the `:rss-root-url' property.
+
+** Run Automatically when Publishing
+
+You can run this automatically by adding org-publish-rss as a
+:completion-function which will run after any publishing action for
+that project.  This is the final publishing step so uploading the RSS
+file will need to be handled by a separate project, see example project.
+
 ** Example Project
 #+begin_src emacs-lisp
   (setq org-publish-project-alist
@@ -47,36 +64,21 @@ For complete list of options see the Commentary section of
 	  ("example.com" :components ("blog" "static"))))
 #+end_src
 
-** Running
-
-M-x org-publish-rss [RET] PROJECT
-
-You may get a cache error, retry this after recently publishing the
-corresponding project.
-
-Verify that the generated urls for the articles' `<link>' tags are correct. If
-not, adjust the `:rss-root-url' property.
-
-** Run Automatically when Publishing
-
-You can run this automatically by adding org-publish-rss as a
-:completion-function which will run after any publishing action for
-that project.  This is the final publishing step so uploading the RSS
-file will need to be handled by a separate project, see example project.
+*Note*: When publishing a file you can ensure all related projects are
+also published by using: ~org-publish-current-project~ (C-c C-e P p).
 
 * Why not use ox-rss.el?
-Using an org exporter adds an additional export steps and
-configuration that is unnecessary for a basic org-publish project.
+Using an Org exporter adds an additional export steps and
+configuration that is unnecessary for a basic project.
 
 Org project --> Generate Org sitemap --> Export sitemap to RSS
 
 Org project --> RSS feed
 
-If you are interested in using ox-rss see the clever solution provided
-by Toon Claes[1].  Ox-rss may also be a better solution if you store
-all posts in one monolithic org file.
-
-[1] https://writepermission.com/org-blogging-rss-feed.html
+Ox-rss.el is still a great solution if you want to convert one
+monolithic Org file into an RSS feed.  If you are interested in using
+ox-rss with org-publish see the [[https://writepermission.com/org-blogging-rss-feed.html][clever solution provided by Toon
+Claes]].
 
 * Outstanding Development Goals
 
