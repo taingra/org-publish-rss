@@ -179,9 +179,9 @@ variable ‘org-id-prefix’.  Use ‘none’ to force no prefix even if
 	  (goto-char (point-min))
 	  (unless org-publish-rss-insert-id-top
 	    ;; FIXME Maybe should consider blank lines between #+keywords
-	    (while (org-at-keyword-p)
+	    (while (and (org-at-keyword-p) (not (org-at-heading-p)))
 	      (forward-line)))
-	  (insert "#+ID:" new-id "\n")
+	  (insert "#+ID: " new-id "\n")
 	  (message "Set #+ID: %s" new-id))
 	 ((not (re-search-forward "[:alnum:]+" (line-end-position) t))
 	  (insert (org-id-new id-prefix))
