@@ -93,18 +93,30 @@
 ;;
 ;;   Copyright notice for content in the channel.
 ;;
+;;   `:rss-guid'
+;;
+;;   By default the page permalink (URL) is used as the unique
+;;   identifier in the RSS feed.  If you frequently rename or move
+;;   filenames you may want to use a unique GUID instead of the
+;;   filename.  Changing the URL/filename will cause the post to show
+;;   up as unread in user's RSS feeds.
+;;
+;;    - nil  - use permalink as GUID (default).
+;;    - t    - require GUID keyword to be set (default #+ID).
+;;    - auto - require and automatically insert GUID key if not set.
+;;
 ;;   `:rss-with-content'
 ;;
 ;;   Include post content in feed.
 ;;    - nil - none (default).
-;;    - top - all content before first heading.
+;;    - top - content before first heading.
 ;;    - all - all post content.
 ;;
 ;;   `:rss-filter-function'
 ;;
-;;   Function used to filter files that should not get an entry in the rss feed.
-;;   It takes the absolute filename of the file being published as argument and
-;;   should return nil if the file should not get an entry on the feed.
+;;   Function used to filter files from the RSS feed.  It takes the
+;;   absolute filename of the file being published as an argument and
+;;   should return t when the post should be included in the feed.
 
 ;;;; Example Configuration:
 
@@ -148,13 +160,8 @@
   :tag "Org publish RSS"
   :group 'org-export)
 
-(defcustom org-publish-rss-indent-xml t
+(defcustom org-publish-rss-indent-xml nil
   "Indent exported RSS XML file."
-  :type 'boolean
-  :group 'org-publish-rss)
-
-(defcustom org-publish-rss-url-as-guid t
-  "Use post URL as GUID for RSS feed."
   :type 'boolean
   :group 'org-publish-rss)
 
@@ -171,23 +178,18 @@
   :type 'string
   :group 'org-publish-rss)
 
-(defcustom org-publish-rss-insert-id-top nil
-  "Insert #+ID tag at top of file.  Default nil is below all other #+KEYS."
-  :type 'boolean
+(defcustom org-publish-rss-use-guid nil
+  "Require unique ID tag in all post files."
+  :type '(choice
+	  (const :tag "Use file permalink as GUID" nil)
+	  (const :tag "Use GUID and require it to be set" t)
+	  (const :tag "Use GUID and automatically insert if not set" auto))
   :group 'org-publish-rss)
 
-
-(defun org-publish-rss--file-to-html (file base-url)
-  "Generate HTML content for an Org FILE.
-BASE-URL used to convert relative links into direct links."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (mark-whole-buffer)
-    (org-export-region-to-html)
-    ;; Find and Replace all relative file links
-    ;; (while  (org-next-link))
-    ;; WIP regex "<img src=\"[^[:alnum:]+[://]]\|<a href=\"[^]"
-    (buffer-string)))
+(defcustom org-publish-rss-guid-keyword "ID"
+  "Keyword used for the GUID used if `:rss-guid' enabled."
+  :type 'string
+  :group 'org-publish-rss)
 
 (defun org-publish-rss--get-base-files (project)
   "Return base files for a PROJECT.
@@ -208,6 +210,17 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
       (delete (expand-file-name "theindex.org" base-dir) base-files))
     base-files))
 
+(defun org-publish-rss--file-to-html (file base-url)
+  "Generate HTML content for an Org FILE.
+BASE-URL used to convert relative links into direct links."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (mark-whole-buffer)
+    (org-export-region-to-html)
+    ;; Find and Replace all relative file links
+    ;; (while  (org-next-link))
+    ;; WIP regex "<img src=\"[^[:alnum:]+[://]]\|<a href=\"[^]"
+    (buffer-string)))
 
 (defun org-publish-rss--builder (project)
   "Generate RSS feed for a PROJECT."
@@ -221,7 +234,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	(description (org-publish-property :rss-description project))
 	(language
 	 (or (org-publish-property :language project)
-	      org-export-default-language))
+	     org-export-default-language))
 	(webmaster (org-publish-property :rss-webmaster project))
 	(editor    (org-publish-property :rss-editor project))
 	(image (org-publish-property :rss-image project))
@@ -231,18 +244,20 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	      (org-publish-property :html-link-up project)
 	      (org-publish-property :html-link-home project)
 	      (org-publish-property :rss-link       project))
-	  	  "/"))
+	  "/"))
 	(rss-file
 	 (or (org-publish-property :rss-file project)
 	     "rss.xml"))
 	(base-files (org-publish-rss--get-base-files project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
+	(guid
+	 (or (org-publish-property :rss-guid project)
+	     org-publish-rss-use-guid))
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
 	     org-publish-rss-with-content))
-	(items-xml "")
-	(org-export-show-temporary-export-buffer nil))
+	(items-xml ""))
     (unless (and title link description)
       (error "RSS spec requires a title, link, and description"))
     (concat
@@ -346,7 +361,6 @@ alist (see `org-publish-project-alist' variable)."
 	    (xml-mode)
 	    (indent-region (point-min) (point-max)))
 	  (write-file filename))))))
-
 
 (defun org-publish-rss-projects (projects)
   "Generate RSS feeds for given PROJECTS."
