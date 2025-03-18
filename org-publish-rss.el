@@ -93,6 +93,13 @@
 ;;
 ;;   Copyright notice for content in the channel.
 ;;
+;;   `:rss-with-content'
+;;
+;;   Include post content in feed.
+;;    - nil - none (default).
+;;    - top - all content before first heading.
+;;    - all - all post content.
+;;
 ;;   `:rss-filter-function'
 ;;
 ;;   Function used to filter files that should not get an entry in the rss feed.
@@ -132,6 +139,7 @@
 ;;; Code:
 
 (require 'ox-publish)
+(require 'ox-html)
 
 (defvar org-publish-rss-version "0.1")
 
@@ -150,11 +158,22 @@
   :type 'boolean
   :group 'org-publish-rss)
 
+(defcustom org-publish-rss-with-content nil
+  "Include post content in exported RSS feed."
+  :type '(choice
+	  (const :tag "Include all post content" all)
+	  (const :tag "Include content before first heading" intro)
+	  (const :tag "Include no content" nil))
+  :group 'org-publish-rss)
 
 (defun opar--insert-generate-guid ()
   "Generate GUID tag for an `org-mode' file."
   ;; TODO optionally insert guid tag similar to ox-rss.el
   )
+(defcustom org-publish-rss-read-more-text "Read more..."
+  "Text to be displayed when post content is truncated."
+  :type 'string
+  :group 'org-publish-rss)
 
 (defcustom org-publish-rss-insert-id-top nil
   "Insert #+ID tag at top of file.  Default nil is below all other #+KEYS."
@@ -189,6 +208,19 @@ variable ‘org-id-prefix’.  Use ‘none’ to force no prefix even if
 	 (t (message "#+ID already set, skipping.")))))))
 
 (defun opar--get-base-files (project)
+
+(defun org-publish-rss--file-to-html (file base-url)
+  "Generate HTML content for an Org FILE.
+BASE-URL used to convert relative links into direct links."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (mark-whole-buffer)
+    (org-export-region-to-html)
+    ;; Find and Replace all relative file links
+    ;; (while  (org-next-link))
+    ;; WIP regex "<img src=\"[^[:alnum:]+[://]]\|<a href=\"[^]"
+    (buffer-string)))
+
   "Return base files for a PROJECT.
 
 Exclude the `:auto-sitemap' and `:makeindex' files."
@@ -280,19 +312,26 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	      (post-url
 	       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
 	 (setq items-xml
-	       (concat items-xml
-		       (format "<item>
-<title>%s</title>
+	       (concat
+		items-xml
+		"<item>\n"
+		(format "<title>%s</title>
 <link>%s</link>
 <pubDate>%s</pubDate>
-<guid>%s</guid>
-</item>\n"
-			       ;; FIXME cache empty error
-			       (org-publish-find-title file project)
-			       post-url
-			       (format-time-string "%a, %d %b %Y %H:%M:%S %z"
-						   (org-publish-find-date file project))
-			       post-url)))))
+<guid>%s</guid>\n"
+
+			;; FIXME cache empty error
+			(org-publish-find-title file project)
+			post-url
+			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
+					    (org-publish-find-date file project))
+			post-url)
+		(when with-content
+		  (format "<description>
+<![CDATA[%s]]>
+</description>"
+			  (org-publish-rss--file-to-html file url)))
+		"</item>\n"))))
      "</channel>\n"
      "</rss>")))
 
