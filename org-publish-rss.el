@@ -240,7 +240,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
     base-files))
 
 
-(defun opar--rss-builder (project)
+(defun org-publish-rss--builder (project)
   "Generate RSS feed for a PROJECT."
   (let ((title
 	 (or (org-publish-property :rss-title     project)
@@ -354,7 +354,7 @@ alist (see `org-publish-project-alist' variable)."
 	       (t project))))
     (when (and (not (null project))
 	       (org-publish-property :auto-rss project))
-      (let ((rss (opar--rss-builder project))
+      (let ((rss (org-publish-rss--builder project))
 	    (filename
 	     (expand-file-name
 	      (or (org-publish-property :rss-file project)
