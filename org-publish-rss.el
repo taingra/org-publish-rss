@@ -141,7 +141,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defvar org-publish-rss-version "0.1")
+(defconst org-publish-rss-version "0.1")
 
 (defgroup org-publish-rss nil
   "Options specific to Org publish with automatic RSS."
@@ -279,6 +279,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
   xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
   xmlns:media=\"http://search.yahoo.com/mrss/\">
 <channel>
+<atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />
 <title>%s</title>
 <link>%s</link>
 <description><![CDATA[%s]]></description>
@@ -286,13 +287,14 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 <lastBuildDate>%s</lastBuildDate>
 <generator>Emacs %s org-publish-rss.el %s</generator>\n"
 	     (symbol-name org-html-coding-system)
+	     (concat url "/" rss-file)
 	     title
 	     link
 	     description
 	     language
 	     (format-time-string "%a, %d %b %Y %H:%M:%S %z")
 	     emacs-version
-	     org-publish-auto-rss-version)
+	     org-publish-rss-version)
      (when webmaster
        (format "<webMaster>%s</webMaster>\n" webmaster))
      (when editor
