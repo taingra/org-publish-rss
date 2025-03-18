@@ -166,10 +166,6 @@
 	  (const :tag "Include no content" nil))
   :group 'org-publish-rss)
 
-(defun opar--insert-generate-guid ()
-  "Generate GUID tag for an `org-mode' file."
-  ;; TODO optionally insert guid tag similar to ox-rss.el
-  )
 (defcustom org-publish-rss-read-more-text "Read more..."
   "Text to be displayed when post content is truncated."
   :type 'string
@@ -180,34 +176,6 @@
   :type 'boolean
   :group 'org-publish-rss)
 
-(defun org-publish-rss-insert-id (&optional file id-prefix)
-  "Generate ID tag in an Org FILE.
-
-See `org-id-method' to customize how this ID is generated.
-
-ID-PREFIX can specify the prefix for the id, the default is given by the
-variable ‘org-id-prefix’.  Use ‘none’ to force no prefix even if
-‘org-id-prefix’ is set."
-  (interactive)
-  (let ((new-id (org-id-new id-prefix)))
-    (save-excursion
-      (save-restriction
-	(widen)
-	(cond
-	 ((not (re-search-forward "^#\\+ID:" (point-max) t))
-	  (goto-char (point-min))
-	  (unless org-publish-rss-insert-id-top
-	    ;; FIXME Maybe should consider blank lines between #+keywords
-	    (while (and (org-at-keyword-p) (not (org-at-heading-p)))
-	      (forward-line)))
-	  (insert "#+ID: " new-id "\n")
-	  (message "Set #+ID: %s" new-id))
-	 ((not (re-search-forward "[:alnum:]+" (line-end-position) t))
-	  (insert (org-id-new id-prefix))
-	  (message "Set #+ID: %s" new-id))
-	 (t (message "#+ID already set, skipping.")))))))
-
-(defun opar--get-base-files (project)
 
 (defun org-publish-rss--file-to-html (file base-url)
   "Generate HTML content for an Org FILE.
