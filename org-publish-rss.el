@@ -221,6 +221,7 @@ BASE-URL used to convert relative links into direct links."
     ;; WIP regex "<img src=\"[^[:alnum:]+[://]]\|<a href=\"[^]"
     (buffer-string)))
 
+(defun org-publish-rss--get-base-files (project)
   "Return base files for a PROJECT.
 
 Exclude the `:auto-sitemap' and `:makeindex' files."
@@ -250,20 +251,30 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	 (or (org-publish-property :rss-link       project)
 	     (org-publish-property :html-link-home project)))
 	(description (org-publish-property :rss-description project))
-	(language (or (org-publish-property :language project)
-		      org-export-default-language))
+	(language
+	 (or (org-publish-property :language project)
+	      org-export-default-language))
 	(webmaster (org-publish-property :rss-webmaster project))
 	(editor    (org-publish-property :rss-editor project))
 	(image (org-publish-property :rss-image project))
 	(url
-	 (or (org-publish-property :rss-root-url project)
-	     (org-publish-property :html-link-up project)
-	     (org-publish-property :html-link-home project)
-	     (org-publish-property :rss-link       project)))
-	(base-files (opar--get-base-files project))
+	 (string-trim-right
+	  (or (org-publish-property :rss-root-url project)
+	      (org-publish-property :html-link-up project)
+	      (org-publish-property :html-link-home project)
+	      (org-publish-property :rss-link       project))
+	  	  "/"))
+	(rss-file
+	 (or (org-publish-property :rss-file project)
+	     "rss.xml"))
+	(base-files (org-publish-rss--get-base-files project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
-	(items-xml ""))
+	(with-content
+	 (or (org-publish-property :rss-with-content project)
+	     org-publish-rss-with-content))
+	(items-xml "")
+	(org-export-show-temporary-export-buffer nil))
     (unless (and title link description)
       (error "RSS spec requires a title, link, and description"))
     (concat
@@ -305,7 +316,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 <title>%s</title>
 <link>%s</link>
 </image>\n"
-	image title link))
+	       image title link))
      ;; According to the RSS spec order does not matter so we
      ;; do not need to waste effort here sorting posts.
      (dolist (file base-files items-xml)
