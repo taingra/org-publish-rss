@@ -84,12 +84,6 @@ monolithic Org file into an RSS feed.  If you are interested in using
 ox-rss with org-publish see the [[https://writepermission.com/org-blogging-rss-feed.html][clever solution provided by Toon
 Claes]].
 
-* Outstanding Development Goals
-
-** TODO Optionally generate GUID tags
-** TODO Add global customization variables
-** TODO Add ability to export with full HTML post content
-
 * License GPLv3
 
 See LICENSE file.
