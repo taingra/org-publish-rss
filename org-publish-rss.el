@@ -7,7 +7,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.1
+;; Version: 0.2
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 
@@ -38,7 +38,7 @@
 ;; attachments list.
 ;;
 ;; This function can be added as a `':completion-function' to run
-;; automatically whenever a publishing action is performed.  Note a
+;; automatically whenever a publishing action is performed.  A
 ;; separate project will need to upload the file using
 ;; `org-publish-attachment'.
 ;;
@@ -54,9 +54,9 @@
 ;;
 ;;   `:rss-root-url'  (recommended)
 ;;
-;;   Root URL where posts will reside on your website.  If your
-;;   project is published to example.com/blog/some-post.html then this
-;;   would be "https://example.com/blog".  If blank falls back to
+;;   Project root URL where files will reside on your website.  If
+;;   your project is published to example.com/blog/some-post.html then
+;;   this would be "https://example.com/blog".  If blank falls back to
 ;;   `:html-link-up', `:html-link-home', then `:rss-link'.  If your
 ;;   RSS generates with broken links try this setting.
 ;;
@@ -96,27 +96,32 @@
 ;;   `:rss-guid'
 ;;
 ;;   By default the page permalink (URL) is used as the unique
-;;   identifier in the RSS feed.  If you frequently rename or move
-;;   filenames you may want to use a unique GUID instead of the
-;;   filename.  Changing the URL/filename will cause the post to show
-;;   up as unread in user's RSS feeds.
+;;   identifier in the RSS feed.  Changing filename/URL will cause
+;;   items to show as new items in users' RSS feed reader.  If you
+;;   want to avoid that you can use a unique GUID key instead.
 ;;
-;;    - nil  - use permalink as GUID (default).
-;;    - t    - require GUID keyword to be set (default #+ID).
-;;    - auto - require and automatically insert GUID key if not set.
+;;    - nil - use permalink as GUID (default).
+;;    - t   - require GUID keyword see below.
+;;
+;;   `:rss-guid-function'
+;;
+;;   Function used to get GUID from file when `:rss-guid' is enabled.
+;;   The default function `org-file-id-get-create' will create a new
+;;   GUID if one is not set.  Function must accept a filename and
+;;   return a unique ID.
 ;;
 ;;   `:rss-with-content'
 ;;
-;;   Include post content in feed.
-;;    - nil - none (default).
-;;    - top - content before first heading.
-;;    - all - all post content.
+;;   Include file content as exported HTML in RSS feed.
+;;    - nil - include no content (default).
+;;    - top - export with content before first heading.
+;;    - all - export all file content.
 ;;
 ;;   `:rss-filter-function'
 ;;
 ;;   Function used to filter files from the RSS feed.  It takes the
 ;;   absolute filename of the file being published as an argument and
-;;   should return t when the post should be included in the feed.
+;;   should return t if the file should be included in the feed.
 
 ;;;; Example Configuration:
 
@@ -146,49 +151,47 @@
 
 ;; When publishing use: org-publish-current-project (C-c C-e P p)
 ;; which will automatically check for the meta project with :components
-;; and will ensure all related projects files are published.
+;; and will ensure all related project files are published.
 
 ;;; Code:
 
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.1")
+(defconst org-publish-rss-version "0.2")
 
 (defgroup org-publish-rss nil
-  "Options specific to Org publish with automatic RSS."
+  "Org publish with automatic RSS Feed."
   :tag "Org publish RSS"
   :group 'org-export)
 
 (defcustom org-publish-rss-indent-xml nil
-  "Indent exported RSS XML file."
+  "Indent final exported RSS XML file."
   :type 'boolean
   :group 'org-publish-rss)
 
 (defcustom org-publish-rss-with-content nil
-  "Include post content in exported RSS feed."
+  "Include file content in exported RSS feed."
   :type '(choice
-	  (const :tag "Include all post content" all)
-	  (const :tag "Include content before first heading" intro)
-	  (const :tag "Include no content" nil))
+	  (const :tag "Include all file content" all)
+	  (const :tag "Include content before first heading" top)
+	  (const :tag "Do not include content" nil))
   :group 'org-publish-rss)
 
 (defcustom org-publish-rss-read-more-text "Read more..."
-  "Text to be displayed when post content is truncated."
+  "Text to be displayed when file content is truncated in RSS Feed."
   :type 'string
   :group 'org-publish-rss)
 
 (defcustom org-publish-rss-use-guid nil
-  "Require unique ID tag in all post files."
-  :type '(choice
-	  (const :tag "Use file permalink as GUID" nil)
-	  (const :tag "Use GUID and require it to be set" t)
-	  (const :tag "Use GUID and automatically insert if not set" auto))
+  "Use GUID key as unique ID for RSS feed items instead of permalinks."
+  :type 'boolean
   :group 'org-publish-rss)
 
-(defcustom org-publish-rss-guid-keyword "ID"
-  "Keyword used for the GUID used if `:rss-guid' enabled."
-  :type 'string
+(defcustom org-publish-rss-guid-function #'org-file-id-get-create
+  "Default function used to get GUID key from Org file.
+Function must accept a filename and return a unique ID string."
+  :type 'function
   :group 'org-publish-rss)
 
 (defun org-publish-rss--get-base-files (project)
@@ -210,20 +213,35 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
       (delete (expand-file-name "theindex.org" base-dir) base-files))
     base-files))
 
-(defun org-publish-rss--file-to-html (file base-url)
+(defun org-publish-rss--file-to-html (file base-url &optional top-only)
   "Generate HTML content for an Org FILE.
-BASE-URL used to convert relative links into direct links."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (mark-whole-buffer)
-    (org-export-region-to-html)
-    ;; Find and Replace all relative file links
-    ;; (while  (org-next-link))
-    ;; WIP regex "<img src=\"[^[:alnum:]+[://]]\|<a href=\"[^]"
-    (buffer-string)))
+BASE-URL used to convert relative links into absolute links.
+
+If TOP-ONLY is non-nil export only the top level text before the first
+heading."
+  (let ((org-html-link-use-abs-url t)
+	(org-export-with-toc org-export-with-toc)
+	(org-export-with-footnotes org-export-with-footnotes))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (when (re-search-forward "^#\\+HTML_LINK_HOME:" (point-max) t)
+	(delete-line)
+	(goto-char (point-min)))
+      (insert "#+HTML_LINK_HOME: " base-url "\n")
+      (when top-only
+	(setq org-export-with-toc nil
+	      org-export-with-footnotes nil)
+	(org-next-visible-heading 1)
+	(narrow-to-region (point-min) (point))
+	(insert "\n" org-publish-rss-read-more-text "\n"))
+      (mark-whole-buffer)
+      (org-export-region-to-html)
+      (buffer-string))))
+
 
 (defun org-publish-rss--builder (project)
-  "Generate RSS feed for a PROJECT."
+  "Generate RSS feed XML for a PROJECT."
   (let ((title
 	 (or (org-publish-property :rss-title     project)
 	     (org-publish-property :sitemap-title project)
@@ -236,12 +254,12 @@ BASE-URL used to convert relative links into direct links."
 	 (or (org-publish-property :language project)
 	     org-export-default-language))
 	(webmaster (org-publish-property :rss-webmaster project))
-	(editor    (org-publish-property :rss-editor project))
-	(image (org-publish-property :rss-image project))
+	(editor    (org-publish-property :rss-editor    project))
+	(image     (org-publish-property :rss-image     project))
 	(url
 	 (string-trim-right
-	  (or (org-publish-property :rss-root-url project)
-	      (org-publish-property :html-link-up project)
+	  (or (org-publish-property :rss-root-url   project)
+	      (org-publish-property :html-link-up   project)
 	      (org-publish-property :html-link-home project)
 	      (org-publish-property :rss-link       project))
 	  "/"))
@@ -254,6 +272,9 @@ BASE-URL used to convert relative links into direct links."
 	(guid
 	 (or (org-publish-property :rss-guid project)
 	     org-publish-rss-use-guid))
+	(guid-func
+	 (or (org-publish-property :rss-guid-function project)
+	     org-publish-rss-guid-function))
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
 	     org-publish-rss-with-content))
@@ -261,7 +282,8 @@ BASE-URL used to convert relative links into direct links."
     (unless (and title link description)
       (error "RSS spec requires a title, link, and description"))
     (concat
-     (format "<?xml version=\"1.0\" encoding=\"%s\"?>
+     (format
+      "<?xml version=\"1.0\" encoding=\"%s\"?>
  <rss version=\"2.0\"
   xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
   xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
@@ -280,54 +302,56 @@ BASE-URL used to convert relative links into direct links."
 <language>%s</language>
 <lastBuildDate>%s</lastBuildDate>
 <generator>Emacs %s org-publish-rss.el %s</generator>\n"
-	     (symbol-name org-html-coding-system)
-	     (concat url "/" rss-file)
-	     title
-	     link
-	     description
-	     language
-	     (format-time-string "%a, %d %b %Y %H:%M:%S %z")
-	     emacs-version
-	     org-publish-rss-version)
+      (symbol-name org-html-coding-system)
+      (concat url "/" rss-file)
+      title
+      link
+      description
+      language
+      (format-time-string "%a, %d %b %Y %H:%M:%S %z")
+      emacs-version
+      org-publish-rss-version)
      (when webmaster
        (format "<webMaster>%s</webMaster>\n" webmaster))
      (when editor
        (format "<managingEditor>%s</managingEditor>\n") editor)
      (when image
-       (format "<image>
+       (format
+	"<image>
 <url>%s</url>
 <title>%s</title>
 <link>%s</link>
 </image>\n"
-	       image title link))
+	image title link))
      ;; According to the RSS spec order does not matter so we
-     ;; do not need to waste effort here sorting posts.
+     ;; do not need to waste effort here sorting items.
      (dolist (file base-files items-xml)
        (let* ((relpath
 	       (string-remove-prefix (expand-file-name base-dir) file))
-	      (post-url
+	      (file-url
 	       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
 	 (setq items-xml
-	       (concat
-		items-xml
-		"<item>\n"
-		(format "<title>%s</title>
-<link>%s</link>
-<pubDate>%s</pubDate>
-<guid>%s</guid>\n"
-
-			;; FIXME cache empty error
+	       (concat items-xml
+		       "<item>\n"
+		       (format
+			"<title>%s</title>
+                         <link>%s</link>
+                         <pubDate>%s</pubDate>
+                         <guid>%s</guid>\n"
 			(org-publish-find-title file project)
-			post-url
+			file-url
 			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
 					    (org-publish-find-date file project))
-			post-url)
-		(when with-content
-		  (format "<description>
-<![CDATA[%s]]>
-</description>"
-			  (org-publish-rss--file-to-html file url)))
-		"</item>\n"))))
+			(if guid
+			    (guid-func file)
+			    file-url))
+		       (when with-content
+			 (format "<description>
+                                  <![CDATA[%s]]>
+                                  </description>"
+				 (org-publish-rss--file-to-html
+				  file url (eq with-content 'top))))
+		       "</item>\n"))))
      "</channel>\n"
      "</rss>")))
 
