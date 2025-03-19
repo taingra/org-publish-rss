@@ -19,6 +19,10 @@ options are:
 - :rss-link :: The URL to the website corresponding to the RSS
   channel.  Will use :html-link-home if blank.
 
+- :rss-with-content :: (all/top) If non-nil will generate with HTML
+  content of files included in the feed.  Option "all" will include
+  all content, "top" will include text before first head.
+
 For complete list of options see the Commentary section of
 [[file:org-publish-rss.el]].
 
