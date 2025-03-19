@@ -284,16 +284,16 @@ heading."
     (concat
      (format
       "<?xml version=\"1.0\" encoding=\"%s\"?>
- <rss version=\"2.0\"
-  xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
-  xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
-  xmlns:dc=\"http://purl.org/dc/elements/1.1/\"
-  xmlns:atom=\"http://www.w3.org/2005/Atom\"
-  xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"
-  xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\"
-  xmlns:georss=\"http://www.georss.org/georss\"
-  xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
-  xmlns:media=\"http://search.yahoo.com/mrss/\">
+<rss version=\"2.0\"
+ xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
+ xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
+ xmlns:dc=\"http://purl.org/dc/elements/1.1/\"
+ xmlns:atom=\"http://www.w3.org/2005/Atom\"
+ xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"
+ xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\"
+ xmlns:georss=\"http://www.georss.org/georss\"
+ xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
+ xmlns:media=\"http://search.yahoo.com/mrss/\">
 <channel>
 <atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />
 <title>%s</title>
@@ -317,11 +317,7 @@ heading."
        (format "<managingEditor>%s</managingEditor>\n") editor)
      (when image
        (format
-	"<image>
-<url>%s</url>
-<title>%s</title>
-<link>%s</link>
-</image>\n"
+	"<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
 	image title link))
      ;; According to the RSS spec order does not matter so we
      ;; do not need to waste effort here sorting items.
@@ -334,10 +330,7 @@ heading."
 	       (concat items-xml
 		       "<item>\n"
 		       (format
-			"<title>%s</title>
-                         <link>%s</link>
-                         <pubDate>%s</pubDate>
-                         <guid>%s</guid>\n"
+			"<title>%s</title>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<guid>%s</guid>\n"
 			(org-publish-find-title file project)
 			file-url
 			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
@@ -346,11 +339,9 @@ heading."
 			    (guid-func file)
 			    file-url))
 		       (when with-content
-			 (format "<description>
-                                  <![CDATA[%s]]>
-                                  </description>"
-				 (org-publish-rss--file-to-html
-				  file url (eq with-content 'top))))
+			 (format "<description>\n<![CDATA[%s]]>\n</description>"
+			  (org-publish-rss--file-to-html
+			   file url (eq with-content 'top))))
 		       "</item>\n"))))
      "</channel>\n"
      "</rss>")))
