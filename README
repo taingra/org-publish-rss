@@ -1,8 +1,37 @@
 #+TITLE: Org Publish RSS
 
-Quickly add RSS feeds to org-publish projects.
+=org-publish-rss.el= is a simple RSS generator for Org-mode projects
+that use Org's built-in [[info:org#Publishing][publishing functionality]].
 
-This works similar to the :auto-sitemap publishing option.
+org-publish-rss.el adds new options for controlling RSS generation to
+the ~org-publish-project-alist~ variable.   It works similar to the
+~:auto-sitemap~ options, making it easy to add RSS to an existing
+Org project.
+
+* Installing
+
+** Installing on Emacs 30.1 or newer
+
+#+begin_src emacs-lisp
+  (use-package org-publish-rss
+    :vc (:url "https://git.sr.ht/~taingram/org-publish-rss.git"
+         :rev :newest))
+#+end_src
+
+** Installing on older Emacs versions
+
+Clone the git repo and add it to your load path.  Change load path to
+wherever you put the repository.
+
+#+begin_src sh
+git clone https://git.sr.ht/~taingram/org-publish-rss
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package org-publish-rss
+    :init (add-to-list 'load-path "~/.config/emacs/my-lisp/org-publish-rss/"))
+#+end_src
+
 
 * Setup
 To use org-publish-rss.el you must add the configuration options
@@ -73,7 +102,9 @@ also published by using: ~org-publish-current-project~ (C-c C-e P p).
 
 * Why not use ox-rss.el?
 Using an Org exporter adds an additional export steps and
-configuration that is unnecessary for a basic project.
+configuration that is unnecessary for a basic project.  Plus adding
+specific RSS options to ~org-publish-project-alist~ makes RSS more
+easily configurable across multiple projects.
 
 Org project --> Generate Org sitemap --> Export sitemap to RSS
 
