@@ -220,7 +220,7 @@ BASE-URL used to convert relative links into absolute links.
 If TOP-ONLY is non-nil export only the top level text before the first
 heading."
   (let ((org-html-link-use-abs-url t)
-	(org-export-with-toc org-export-with-toc)
+	(org-export-with-toc nil)
 	(org-export-with-footnotes org-export-with-footnotes))
     (with-temp-buffer
       (insert-file-contents file)
@@ -230,8 +230,7 @@ heading."
 	(goto-char (point-min)))
       (insert "#+HTML_LINK_HOME: " base-url "\n")
       (when top-only
-	(setq org-export-with-toc nil
-	      org-export-with-footnotes nil)
+	(setq org-export-with-footnotes nil)
 	(org-next-visible-heading 1)
 	(narrow-to-region (point-min) (point))
 	(insert "\n" org-publish-rss-read-more-text "\n"))
