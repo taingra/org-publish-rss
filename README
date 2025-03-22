@@ -1,6 +1,6 @@
 #+TITLE: Org Publish RSS
 
-=org-publish-rss.el= is a simple RSS generator for [[https://orgmode.org/][Org-mode]] built-in
+=org-publish-rss.el= is a simple RSS generator for [[https://orgmode.org/][Org-mode]]'s built-in
 [[info:org#Publishing][publishing functionality]].
 
 org-publish-rss.el adds new options for controlling RSS generation to
@@ -26,11 +26,19 @@ wherever you put the repository.
 git clone https://git.sr.ht/~taingram/org-publish-rss
 #+end_src
 
+Manually load and require the package.
+
 #+begin_src emacs-lisp
-  (use-package org-publish-rss
-    :init (add-to-list 'load-path "~/.config/emacs/my-lisp/org-publish-rss/"))
+  (add-to-list 'load-path "~/.config/emacs/my-lisp/org-publish-rss/")
+  (require 'org-publish-rss)
 #+end_src
 
+Or do the same with use-package:
+
+#+begin_src emacs-lisp
+  (use-package org-publish-rss
+    :load-path "~/.config/emacs/my-lisp/org-publish-rss/")
+#+end_src
 
 * Setup
 To use =org-publish-rss.el= you must add the configuration options
@@ -52,7 +60,7 @@ options are:
   all content, "top" will include text before first head.
 
 For complete list of options see the Commentary section of
-[[file:org-publish-rss.el]].
+[[https://git.sr.ht/~taingram/org-publish-rss/tree/master/item/org-publish-rss.el][org-publish-rss.el]].
 
 ** Running
 

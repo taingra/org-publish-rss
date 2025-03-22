@@ -122,6 +122,9 @@
 ;;   Function used to filter files from the RSS feed.  It takes the
 ;;   absolute filename of the file being published as an argument and
 ;;   should return t if the file should be included in the feed.
+;;
+;;   See included package `org-file-id' for generating simple GUIDs.
+;;
 
 ;;;; Example Configuration:
 
