@@ -3,9 +3,12 @@
 =org-publish-rss.el= is a simple RSS generator for [[https://orgmode.org/][Org-mode]]'s built-in
 [[info:org#Publishing][publishing functionality]].
 
-org-publish-rss.el adds new options for controlling RSS generation to
-the ~org-publish-project-alist~ variable.  It works similar to
-~:auto-sitemap~, making it easy to add RSS to an existing Org project.
+This package adds new options for controlling RSS generation to the
+=org-publish-project-alist= variable (see [[info:org#Project alist][the Org manual]] if you are
+new to the publishing options).  It adds =:auto-rss= and other options
+that work similar to the included =:auto-sitemap= functionality.  This
+should hopefully make it easy for users to add RSS feeds to existing
+Org publish websites.
 
 * Installing
 
@@ -42,7 +45,7 @@ Or do the same with use-package:
 
 * Setup
 To use =org-publish-rss.el= you must add the configuration options
-to your ~org-publish-project-alist~ settings.  The minimum required
+to your =org-publish-project-alist= settings.  The minimum required
 options are:
 
 - :auto-rss :: (t/nil) Enables RSS feed generation.
@@ -53,71 +56,80 @@ options are:
 - :rss-description :: Channel description of the RSS feed.
 
 - :rss-link :: The URL to the website corresponding to the RSS
-  channel.  Will use :html-link-home if blank.
+  channel.  Will use =:html-link-home= if blank.
 
-- :rss-with-content :: (all/top) If non-nil will generate with HTML
-  content of files included in the feed.  Option "all" will include
-  all content, "top" will include text before first head.
+- :rss-root-url :: The root website URL where the project is being
+  published (e.g. https://example.com/blog/).  This is used to
+  generate RSS links correctly.  If blank will fallback to
+  =:html-link-up= / =:html-link-home= / =:rss-link=, but that may
+  result in broken links.
+
+** Optional Settings
+- :rss-with-content :: (all/top/nil) If non-nil will generate RSS feed
+  with exported HTML content of all files included.  Option "all" will
+  include all content, "top" will include text before first head.
 
 For complete list of options see the Commentary section of
 [[https://git.sr.ht/~taingram/org-publish-rss/tree/master/item/org-publish-rss.el][org-publish-rss.el]].
 
-** Running
+* Running
 
-M-x org-publish-rss [RET] PROJECT
+M-x org-publish-rss [RET] PROJECT [RET]
 
 You may get a cache error, retry this after recently publishing the
 corresponding project.
 
-Verify that the generated urls for the articles' `<link>' tags are
-correct. If not, adjust the ~:rss-root-url~ property.
+After generating verify the articles' =<link>= tags are correct. If
+not, adjust the =:rss-root-url= property.
 
 ** Run Automatically when Publishing
 
-You can run this automatically by adding org-publish-rss as a
-~:completion-function~ which will run after any publishing action for
+You can run this automatically by adding =org-publish-rss= as a
+=:completion-function= which will run after any publishing action for
 that project.  This is the final publishing step so uploading the RSS
 file will need to be handled by a separate project, see example project.
 
 ** Example Project
 #+begin_src emacs-lisp
   (setq org-publish-project-alist
-	'(("blog"
-	   :base-directory "~/Documents/org/website/"
-	   :base-extension "org"
-	   :publishing-directory "~/public_html/"
-	   :publishing-function  org-html-publish-to-html
+  	'(("blog"
+  	   :base-directory "~/Documents/org/website/"
+  	   :base-extension "org"
+  	   :publishing-directory "~/public_html/"
+  	   :publishing-function  org-html-publish-to-html
 
-	   :html-link-home "https://example.com"
+  	   :html-link-home "https://example.com"
 
-	   :auto-rss t
-	   :rss-title "Example Posts"
-	   :rss-description "My example website."
+  	   :auto-rss t
+  	   :rss-title "Example Posts"
+  	   :rss-description "My example website."
+  	   :rss-with-content all
 
-	   :completion-function org-publish-rss
-	  ("static"
-	   :base-directory "~/Documents/org/website/"
-	   :base-extension "css\\|jpg\\|png\||gif"
-	   :include ("rss.xml")
-	   :publishing-directory "~/public_html/"
-	   :publishing-function org-publish-attachment)
-	  ("example.com" :components ("blog" "static"))))
+  	   :completion-function org-publish-rss
+  	  ("static"
+  	   :base-directory "~/Documents/org/website/"
+  	   :base-extension "css\\|jpg\\|png\||gif"
+  	   :include ("rss.xml")
+  	   :publishing-directory "~/public_html/"
+  	   :publishing-function org-publish-attachment)
+  	  ("example.com" :components ("blog" "static"))))
 #+end_src
 
 *Note*: When publishing a file you can ensure all related projects are
-also published by using: ~org-publish-current-project~ (C-c C-e P p).
+also published by using: =org-publish-current-project= (C-c C-e P p).
 
 * Why not use ox-rss.el?
 Using an Org exporter adds an additional export steps and
-configuration that is unnecessary for a basic project.  Plus adding
-specific RSS options to ~org-publish-project-alist~ makes RSS more
-easily configurable across multiple projects.
+configuration that is unnecessary for a basic project.
 
-Org project --> Generate Org sitemap --> Export sitemap to RSS
+ - =Org project --[auto-sitemap]--> Generate Org sitemap --[ox-rss]--> Export sitemap to RSS=
 
-Org project --> RSS feed
+ - =Org project --[org-publish-rss]--> RSS feed=
 
-Ox-rss.el is still a great solution if you want to convert one
+Plus adding specific RSS options to =org-publish-project-alist= makes
+RSS more easily configurable across multiple projects.
+
+=ox-rss.el= is still a great solution if you want to convert one
 monolithic Org file into an RSS feed.  If you are interested in using
 ox-rss with org-publish see the [[https://writepermission.com/org-blogging-rss-feed.html][clever solution provided by Toon
 Claes]].
@@ -140,3 +152,11 @@ GNU General Public License for more details.
 For a full copy of the GNU General Public License
 see <http://www.gnu.org/licenses/>.
 #+end_quote
+
+* Acknowledgments
+
+Thanks to Thibaut Meyer for his feedback, suggestions, and fixes.
+
+Thank you to the kind people on the Org mailing lists and the Org
+developers.  If Org wasn't so great I probably would have never
+discovered the joys of Lisp and the Emacs community.
