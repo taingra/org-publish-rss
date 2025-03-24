@@ -1,8 +1,9 @@
-;;; org-publish-rss.el  --- Generate RSS for org publish -*- lexical-binding: t -*-
+;;; org-publish-rss.el --- Generate RSS for org publish -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2023-2025 Thomas Ingram
+;; Copyright (C)      2025 Thibaut Meyer
 ;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
-;; Copyright (C) 2013-2015  Bastien Guerry
+;; Copyright (C) 2013-2015 Bastien Guerry
 
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
@@ -44,13 +45,13 @@
 ;;
 ;; Properties added to `org-publish-project-alist' for RSS generation:
 ;;
-;;   `:auto-rss' (required)
+;;   `:auto-rss'  (required)
 ;;
 ;;    Enables RSS feed generation.
 ;;
 ;;   `:rss-file'
 ;;
-;;   Generated RSS file's filename (default rss.xml).
+;;   Generated RSS file's filename (defaults to "rss.xml").
 ;;
 ;;   `:rss-root-url'  (recommended)
 ;;
@@ -166,7 +167,7 @@
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
   :tag "Org publish RSS"
-  :group 'org-export)
+  :group 'org-publish)
 
 (defcustom org-publish-rss-indent-xml nil
   "Indent final exported RSS XML file."
@@ -208,8 +209,8 @@ Function must accept a filename and return a unique ID string."
 Exclude the `:auto-sitemap' and `:makeindex' files."
   (let* ((base-dir (file-name-as-directory
 		    (org-publish-property :base-directory project)))
-         (filter-fn
-          (or (org-publish-property :rss-filter-function project) (lambda (fn) t)))
+	 (filter-fn
+	  (or (org-publish-property :rss-filter-function project) (lambda (fn) t)))
 	 (base-files (seq-filter filter-fn (org-publish-get-base-files project))))
     (when (org-publish-property :auto-sitemap project)
       (delete (expand-file-name
@@ -353,7 +354,7 @@ heading."
      "</channel>\n"
      "</rss>")))
 
-
+;;;###autoload
 (defun org-publish-rss (project)
   "Create RSS feed for an org publish PROJECT.
 
