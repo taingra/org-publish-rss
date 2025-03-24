@@ -370,8 +370,9 @@ alist (see `org-publish-project-alist' variable)."
 	     (expand-file-name
 	      (or (org-publish-property :rss-file project)
 		  "rss.xml")
-	      (file-name-as-directory
-	       (org-publish-property :base-directory project)))))
+              (or (org-publish-property :publishing-directory project)
+	          (file-name-as-directory
+	           (org-publish-property :base-directory project))))))
 	(with-temp-buffer
 	  (insert rss)
 	  (when org-publish-rss-indent-xml
