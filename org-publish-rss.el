@@ -237,9 +237,13 @@ heading."
 	(org-next-visible-heading 1)
 	(narrow-to-region (point-min) (point))
 	(insert "\n" org-publish-rss-read-more-text "\n"))
-      (mark-whole-buffer)
-      (org-export-region-to-html)
-      (buffer-string))))
+      ;; use correct directory for current buffer when exporting
+      ;; to ensure correct relative paths for e.g. SETUPFILE
+      (let ((default-directory
+             (or (file-name-directory file) default-directory)))
+        (org-html-export-as-html))
+      (with-current-buffer "*Org HTML Export*"
+        (buffer-string)))))
 
 
 (defun org-publish-rss--builder (project)
