@@ -7,7 +7,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.2
+;; Version: 0.3
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 
@@ -161,7 +161,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.2")
+(defconst org-publish-rss-version "0.3")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -224,7 +224,8 @@ If TOP-ONLY is non-nil export only the top level text before the first
 heading."
   (let ((org-html-link-use-abs-url t)
 	(org-export-with-toc nil)
-	(org-export-with-footnotes org-export-with-footnotes))
+	(org-export-with-footnotes org-export-with-footnotes)
+	(org-export-show-temporary-export-buffer nil))
     (with-temp-buffer
       (insert-file-contents file)
       (goto-char (point-min))
@@ -241,7 +242,7 @@ heading."
       ;; to ensure correct relative paths for e.g. SETUPFILE
       (let ((default-directory
              (or (file-name-directory file) default-directory)))
-        (org-html-export-as-html))
+        (org-html-export-as-html nil nil nil t))
       (with-current-buffer "*Org HTML Export*"
         (buffer-string)))))
 
