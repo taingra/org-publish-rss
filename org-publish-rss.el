@@ -175,7 +175,8 @@
   :group 'org-publish-rss)
 
 (defcustom org-publish-rss-publish-immediately nil
-  "When non-nil create RSS file in `:publishing-directory' instead of `:base-directory'."
+  "When non-nil generate RSS file in `:publishing-directory'.
+By default the RSS file is created in the project's `:base-directory'."
   :type 'boolean
   :group 'org-publish-rss)
 
@@ -197,6 +198,7 @@
   :type 'boolean
   :group 'org-publish-rss)
 
+(declare-function  org-file-id-get-create "org-file-id" (file))
 (defcustom org-publish-rss-guid-function #'org-file-id-get-create
   "Default function used to get GUID key from Org file.
 Function must accept a filename and return a unique ID string."
@@ -322,7 +324,7 @@ heading."
      (when webmaster
        (format "<webMaster>%s</webMaster>\n" webmaster))
      (when editor
-       (format "<managingEditor>%s</managingEditor>\n") editor)
+       (format "<managingEditor>%s</managingEditor>\n" editor))
      (when image
        (format
 	"<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
