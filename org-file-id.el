@@ -64,7 +64,7 @@ headline."
   "Get file ID keyword from current buffer.
 
 Will move the point and assumes no narrowing is in effect.  For general
-usage use 'org-file-id-get'."
+usage use `'org-file-id-get'."
   (goto-char (point-min))
   (when (re-search-forward
 	 (concat "^#\\+" org-file-id-keyword ":") (point-max) t)
@@ -152,7 +152,7 @@ See `org-id-method' to customize how this ID is generated."
 	(org-file-id--create-in-buffer force)
 	(save-buffer))
     ;; Try to update current buffer
-    (when (interactive-p)
+    (when (called-interactively-p 'interactive)
       (unless (eq major-mode 'org-mode)
 	(user-error "Cannot be used outside of org-mode buffers"))
       (save-excursion
