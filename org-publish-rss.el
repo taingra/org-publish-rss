@@ -7,7 +7,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.3
+;; Version: 0.4
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 
@@ -161,7 +161,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.3")
+(defconst org-publish-rss-version "0.4")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -170,6 +170,11 @@
 
 (defcustom org-publish-rss-indent-xml nil
   "Indent final exported RSS XML file."
+  :type 'boolean
+  :group 'org-publish-rss)
+
+(defcustom org-publish-rss-publish-immediately nil
+  "When non-nil create RSS file in `:publishing-directory' instead of `:base-directory'."
   :type 'boolean
   :group 'org-publish-rss)
 
@@ -370,9 +375,10 @@ alist (see `org-publish-project-alist' variable)."
 	     (expand-file-name
 	      (or (org-publish-property :rss-file project)
 		  "rss.xml")
-              (or (org-publish-property :publishing-directory project)
-	          (file-name-as-directory
-	           (org-publish-property :base-directory project))))))
+	      (if org-publish-rss-publish-immediately
+		  (org-publish-property :publishing-directory project)
+		(file-name-as-directory
+	         (org-publish-property :base-directory project))))))
 	(with-temp-buffer
 	  (insert rss)
 	  (when org-publish-rss-indent-xml
