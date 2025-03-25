@@ -222,10 +222,8 @@ BASE-URL used to convert relative links into absolute links.
 
 If TOP-ONLY is non-nil export only the top level text before the first
 heading."
-  (let ((org-html-link-use-abs-url t)
-	(org-export-with-toc nil)
-	(org-export-with-footnotes org-export-with-footnotes)
-	(org-export-show-temporary-export-buffer nil))
+  (let ((default-directory (or (file-name-directory file) default-directory))
+	(with-footnotes org-export-with-footnotes))
     (with-temp-buffer
       (insert-file-contents file)
       (goto-char (point-min))
@@ -238,13 +236,10 @@ heading."
 	(org-next-visible-heading 1)
 	(narrow-to-region (point-min) (point))
 	(insert "\n" org-publish-rss-read-more-text "\n"))
-      ;; use correct directory for current buffer when exporting
-      ;; to ensure correct relative paths for e.g. SETUPFILE
-      (let ((default-directory
-             (or (file-name-directory file) default-directory)))
-        (org-html-export-as-html nil nil nil t))
-      (with-current-buffer "*Org HTML Export*"
-        (buffer-string)))))
+      (org-export-as 'html nil nil t
+		     `(:with-toc nil
+		       :with-footnotes ,with-footnotes
+		       :html-link-use-abs-url t)))))
 
 
 (defun org-publish-rss--builder (project)
