@@ -65,29 +65,22 @@ options are:
   result in broken links.
 
 ** Optional Settings
+- :rss-guid :: (t/nil) by default the file's permalink is used as the
+  unique identifier for the RSS feed.  If you wish to use a unique ID
+  tag instead enable this property.
+
+By default =:rss-guid t= uses the ID functions from the included
+=org-file-id= package, to use that you'll need to
+=(require 'org-file-id)= in your init.  See =:rss-guid-function= /
+=org-publish-rss-guid-function= for details on using your own
+function.
+
 - :rss-with-content :: (all/top/nil) If non-nil will generate RSS feed
   with exported HTML content of all files included.  Option "all" will
   include all content, "top" will include text before first head.
 
 For complete list of options see the Commentary section of
 [[https://git.sr.ht/~taingram/org-publish-rss/tree/master/item/org-publish-rss.el][org-publish-rss.el]].
-
-* Running
-
-M-x org-publish-rss [RET] PROJECT [RET]
-
-You may get a cache error, retry this after recently publishing the
-corresponding project.
-
-After generating verify the articles' =<link>= tags are correct. If
-not, adjust the =:rss-root-url= property.
-
-** Run Automatically when Publishing
-
-You can run this automatically by adding =org-publish-rss= as a
-=:completion-function= which will run after any publishing action for
-that project.  This is the final publishing step so uploading the RSS
-file will need to be handled by a separate project, see example project.
 
 ** Example Project
 #+begin_src emacs-lisp
@@ -115,8 +108,26 @@ file will need to be handled by a separate project, see example project.
   	  ("example.com" :components ("blog" "static"))))
 #+end_src
 
-*Note*: When publishing a file you can ensure all related projects are
-also published by using: =org-publish-current-project= (C-c C-e P p).
+* Running
+
+M-x org-publish-rss [RET] PROJECT [RET]
+
+You may get a cache error, retry this after recently publishing the
+corresponding project.
+
+After generating verify the articles' =<link>= tags are correct. If
+not, adjust the =:rss-root-url= property.
+
+** Run Automatically when Publishing
+
+You can run this automatically by adding =org-publish-rss= as a
+=:completion-function= which will run after any publishing action for
+that project.  This is the final publishing step so uploading the RSS
+file will need to be handled by a separate project, see example
+project, or by enabling =org-publish-rss-publish-immediately=.
+
+When publishing a file you can ensure all related projects are also
+published by using: =org-publish-current-project= (C-c C-e P p).
 
 * Why not use ox-rss.el?
 Using an Org exporter adds an additional export steps and
