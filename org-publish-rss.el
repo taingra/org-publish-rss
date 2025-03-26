@@ -90,7 +90,7 @@
 ;;
 ;;   Email address for person responsible for editorial content.
 ;;
-;;   `:copyright'
+;;   `:rss-copyright'
 ;;
 ;;   Copyright notice for content in the channel.
 ;;
@@ -167,7 +167,24 @@
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
   :tag "Org publish RSS"
-  :group 'org-publish)
+  :group 'org-export-publish)
+
+(defcustom org-publish-rss-webmaster nil
+  "Default webmaster email to be included in exported RSS.
+Recommended format: john@example.com (John Smith)"
+  :type 'string
+  :group 'org-publish-rss)
+
+(defcustom org-publish-rss-editor nil
+  "Default editor email to be included in exported RSS.
+Recommended format: john@example.com (John Smith)"
+  :type 'string
+  :group 'org-publish-rss)
+
+(defcustom org-publish-rss-copyright nil
+  "Default copyright text to be included in exported RSS."
+  :type 'string
+  :group 'org-publish-rss)
 
 (defcustom org-publish-rss-indent-xml nil
   "Indent final exported RSS XML file."
@@ -263,9 +280,19 @@ heading."
 	(language
 	 (or (org-publish-property :language project)
 	     org-export-default-language))
-	(webmaster (org-publish-property :rss-webmaster project))
-	(editor    (org-publish-property :rss-editor    project))
-	(image     (org-publish-property :rss-image     project))
+	(webmaster
+	 (or
+	  (org-publish-property :rss-webmaster project)
+	  org-publish-rss-webmaster))
+	(editor
+	 (or
+	  (org-publish-property :rss-editor project)
+	  org-publish-rss-editor))
+	(copyright
+	 (or
+	  (org-publish-property :rss-copyright project)
+	  org-publish-rss-copyright))
+	(image (org-publish-property :rss-image project))
 	(url
 	 (string-trim-right
 	  (or (org-publish-property :rss-root-url   project)
@@ -325,6 +352,8 @@ heading."
        (format "<webMaster>%s</webMaster>\n" webmaster))
      (when editor
        (format "<managingEditor>%s</managingEditor>\n" editor))
+     (when copyright
+       (format "<copyright>%s</copyright>" copyright))
      (when image
        (format
 	"<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
