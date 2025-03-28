@@ -8,7 +8,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.4
+;; Version: 0.5
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 
@@ -96,20 +96,14 @@
 ;;
 ;;   `:rss-guid'
 ;;
-;;   By default the page permalink (URL) is used as the unique
-;;   identifier in the RSS feed.  Changing filename/URL will cause
-;;   items to show as new items in users' RSS feed reader.  If you
-;;   want to avoid that you can use a unique GUID key instead.
+;;   Method used to produce the global unique identifiers (GUID) for the feed's
+;;   items. By default the page's permalink (URL) is used. Changing the
+;;   filename/URL will cause items to show as new items in users' RSS feed
+;;   reader. If you want to avoid that, you can instead specify a function that
+;;   takes a filename as argument and returns a unique ID string.
 ;;
-;;    - nil - use permalink as GUID (default).
-;;    - t   - require GUID keyword see below.
-;;
-;;   `:rss-guid-function'
-;;
-;;   Function used to get GUID from file when `:rss-guid' is enabled.
-;;   The default function `org-file-id-get-create' will create a new
-;;   GUID if one is not set.  Function must accept a filename and
-;;   return a unique ID.
+;;   - permalinks      - the page's link (URL) is used as the GUID (default).
+;;   - custom function - takes a filename as argument and returns the GUID.
 ;;
 ;;   `:rss-with-content'
 ;;
@@ -123,8 +117,6 @@
 ;;   Function used to filter files from the RSS feed.  It takes the
 ;;   absolute filename of the file being published as an argument and
 ;;   should return t if the file should be included in the feed.
-;;
-;;   See included package `org-file-id' for generating simple GUIDs.
 ;;
 
 ;;;; Example Configuration:
@@ -210,16 +202,13 @@ By default the RSS file is created in the project's `:base-directory'."
   :type 'string
   :group 'org-publish-rss)
 
-(defcustom org-publish-rss-use-guid nil
-  "Use GUID key as unique ID for RSS feed items instead of permalinks."
-  :type 'boolean
-  :group 'org-publish-rss)
-
-(declare-function  org-file-id-get-create "org-file-id" (file))
-(defcustom org-publish-rss-guid-function #'org-file-id-get-create
-  "Default function used to get GUID key from Org file.
-Function must accept a filename and return a unique ID string."
-  :type 'function
+(defcustom org-publish-rss-guid-method 'permalinks
+  "Default behaviour used to generate a GUID key from am Org file.
+If set to a function, it must accept a filename and return a unique ID
+string."
+  :type '(choice
+	  (const    :tag "Use page's URL as GUID" permalinks)
+	  (function :tag "Custom GUID generation function"))
   :group 'org-publish-rss)
 
 (defun org-publish-rss--get-base-files (project)
@@ -306,12 +295,9 @@ heading."
 	(base-files (org-publish-rss--get-base-files project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
-	(guid
+	(guid-method
 	 (or (org-publish-property :rss-guid project)
-	     org-publish-rss-use-guid))
-	(guid-func
-	 (or (org-publish-property :rss-guid-function project)
-	     org-publish-rss-guid-function))
+	     org-publish-rss-guid-method))
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
 	     org-publish-rss-with-content))
@@ -364,19 +350,25 @@ heading."
        (let* ((relpath
 	       (string-remove-prefix (expand-file-name base-dir) file))
 	      (file-url
-	       (concat url "/" (string-remove-suffix ".org" relpath) ".html")))
+	       (concat url "/" (string-remove-suffix ".org" relpath) ".html"))
+	      (guid
+	       (pcase guid-method
+		 ('permalinks file-url)
+		 ((pred functionp)
+		  (funcall guid-method file))
+		 (_ (error "Invalid GUID generation method.")))))
 	 (setq items-xml
 	       (concat items-xml
 		       "<item>\n"
 		       (format
-			"<title>%s</title>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<guid>%s</guid>\n"
+			"<title>%s</title>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<guid%s>%s</guid>\n"
 			(org-publish-find-title file project)
 			file-url
 			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
 					    (org-publish-find-date file project))
-			(if guid
-			    (guid-func file)
-			    file-url))
+			(if (eq guid-method 'permalinks)
+			    "" " isPermaLink=\"false\"")
+			guid)
 		       (when with-content
 			 (format "<description>\n<![CDATA[%s]]>\n</description>"
 			  (org-publish-rss--file-to-html
