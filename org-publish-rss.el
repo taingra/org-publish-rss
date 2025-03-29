@@ -96,14 +96,17 @@
 ;;
 ;;   `:rss-guid'
 ;;
-;;   Method used to produce the global unique identifiers (GUID) for the feed's
-;;   items. By default the page's permalink (URL) is used. Changing the
-;;   filename/URL will cause items to show as new items in users' RSS feed
-;;   reader. If you want to avoid that, you can instead specify a function that
-;;   takes a filename as argument and returns a unique ID string.
+;;   Method used to set the global unique identifiers (GUID) tag for
+;;   items in the RSS feed.  The published file's permalink (URL) is
+;;   used by default.
 ;;
-;;   - permalinks      - the page's link (URL) is used as the GUID (default).
-;;   - custom function - takes a filename as argument and returns the GUID.
+;;   - permalink - the file's published URL is used as GUID (default).
+;;   - function  - a function that takes a filename and returns an ID.
+;;
+;;   When permalinks are used any changes to the filename or URL will
+;;   cause the item to appear as new in feed readers.  To avoid that,
+;;   you can specify a custom function to provide a unique file ID.
+;;   See the provided org-file-id.el for a simple solution.
 ;;
 ;;   `:rss-with-content'
 ;;
@@ -154,7 +157,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.4")
+(defconst org-publish-rss-version "0.5")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -202,12 +205,12 @@ By default the RSS file is created in the project's `:base-directory'."
   :type 'string
   :group 'org-publish-rss)
 
-(defcustom org-publish-rss-guid-method 'permalinks
+(defcustom org-publish-rss-guid-method 'permalink
   "Default behaviour used to generate a GUID key from am Org file.
 If set to a function, it must accept a filename and return a unique ID
 string."
   :type '(choice
-	  (const    :tag "Use page's URL as GUID" permalinks)
+	  (const    :tag "Use page's URL as GUID" permalink)
 	  (function :tag "Custom GUID generation function"))
   :group 'org-publish-rss)
 
@@ -353,7 +356,7 @@ heading."
 	       (concat url "/" (string-remove-suffix ".org" relpath) ".html"))
 	      (guid
 	       (pcase guid-method
-		 ('permalinks file-url)
+		 ('permalink file-url)
 		 ((pred functionp)
 		  (funcall guid-method file))
 		 (_ (error "Invalid GUID generation method.")))))
@@ -366,7 +369,7 @@ heading."
 			file-url
 			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
 					    (org-publish-find-date file project))
-			(if (eq guid-method 'permalinks)
+			(if (eq guid-method 'permalink)
 			    "" " isPermaLink=\"false\"")
 			guid)
 		       (when with-content

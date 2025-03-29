@@ -65,15 +65,15 @@ options are:
   result in broken links.
 
 ** Optional Settings
-- :rss-guid :: (t/nil) by default the file's permalink is used as the
-  unique identifier for the RSS feed.  If you wish to use a unique ID
-  tag instead enable this property.
+- :rss-guid :: (permalink/custom function) by default the file's
+  published permalink is used as the unique identifier for feed items.
+  If you wish to use a unique ID tag then set this to your preferred
+  ID function.
 
-By default =:rss-guid t= uses the ID functions from the included
-=org-file-id= package, to use that you'll need to
-=(require 'org-file-id)= in your init.  See =:rss-guid-function= /
-=org-publish-rss-guid-function= for details on using your own
-function.
+  We provide the small package =org-file-id.el= that can be used to
+  generate unique file ID's.  To use it you'll need to =(require
+  'org-file-id)= and set the desired ID function =:rss-guid
+  org-file-id-get-create=
 
 - :rss-with-content :: (all/top/nil) If non-nil will generate RSS feed
   with exported HTML content of all files included.  Option "all" will
