@@ -167,43 +167,36 @@
 (defcustom org-publish-rss-webmaster nil
   "Default webmaster email to be included in exported RSS.
 Recommended format: john@example.com (John Smith)"
-  :type 'string
-  :group 'org-publish-rss)
+  :type 'string)
 
 (defcustom org-publish-rss-editor nil
   "Default editor email to be included in exported RSS.
 Recommended format: john@example.com (John Smith)"
-  :type 'string
-  :group 'org-publish-rss)
+  :type 'string)
 
 (defcustom org-publish-rss-copyright nil
   "Default copyright text to be included in exported RSS."
-  :type 'string
-  :group 'org-publish-rss)
+  :type 'string)
 
 (defcustom org-publish-rss-indent-xml nil
   "Indent final exported RSS XML file."
-  :type 'boolean
-  :group 'org-publish-rss)
+  :type 'boolean)
 
 (defcustom org-publish-rss-publish-immediately nil
   "When non-nil generate RSS file in `:publishing-directory'.
 By default the RSS file is created in the project's `:base-directory'."
-  :type 'boolean
-  :group 'org-publish-rss)
+  :type 'boolean)
 
 (defcustom org-publish-rss-with-content nil
   "Include file content in exported RSS feed."
   :type '(choice
 	  (const :tag "Include all file content" all)
 	  (const :tag "Include content before first heading" top)
-	  (const :tag "Do not include content" nil))
-  :group 'org-publish-rss)
+	  (const :tag "Do not include content" nil)))
 
 (defcustom org-publish-rss-read-more-text "Read more..."
   "Text to be displayed when file content is truncated in RSS Feed."
-  :type 'string
-  :group 'org-publish-rss)
+  :type 'string)
 
 (defcustom org-publish-rss-guid-method 'permalink
   "Default behaviour used to generate a GUID key from am Org file.
@@ -211,8 +204,7 @@ If set to a function, it must accept a filename and return a unique ID
 string."
   :type '(choice
 	  (const    :tag "Use page's URL as GUID" permalink)
-	  (function :tag "Custom GUID generation function"))
-  :group 'org-publish-rss)
+	  (function :tag "Custom GUID generation function")))
 
 (defun org-publish-rss--get-base-files (project)
   "Return base files for a PROJECT.
