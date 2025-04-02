@@ -100,8 +100,10 @@
 ;;   items in the RSS feed.  The published file's permalink (URL) is
 ;;   used by default.
 ;;
-;;   - permalink - the file's published URL is used as GUID (default).
-;;   - function  - a function that takes a filename and returns an ID.
+;;   - permalink (default)    - the file's published URL is used as GUID.
+;;   - org-file-id-get-create - use an ID specific to the org file as GUID.
+;;   - function               - a function that takes a filename and returns an
+;;                              ID.
 ;;
 ;;   When permalinks are used any changes to the filename or URL will
 ;;   cause the item to appear as new in feed readers.  To avoid that,
@@ -204,6 +206,7 @@ If set to a function, it must accept a filename and return a unique ID
 string."
   :type '(choice
 	  (const    :tag "Use page's URL as GUID" permalink)
+	  (const    :tag "Use the Org file's ID as GUID" org-file-id-get-create)
 	  (function :tag "Custom GUID generation function")))
 
 (defun org-publish-rss--get-base-files (project)
@@ -213,7 +216,7 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
   (let* ((base-dir (file-name-as-directory
 		    (org-publish-property :base-directory project)))
 	 (filter-fn
-	  (or (org-publish-property :rss-filter-function project) (lambda (fn) t)))
+	  (or (org-publish-property :rss-filter-function project) (lambda (_fn) t)))
 	 (base-files (seq-filter filter-fn (org-publish-get-base-files project))))
     (when (org-publish-property :auto-sitemap project)
       (delete (expand-file-name
@@ -299,6 +302,8 @@ heading."
 	(items-xml ""))
     (unless (and title link description)
       (error "RSS spec requires a title, link, and description"))
+    (when (eq guid-method 'org-file-id-get-create)
+      (require 'org-file-id))
     (concat
      (format
       "<?xml version=\"1.0\" encoding=\"%s\"?>
@@ -397,7 +402,7 @@ alist (see `org-publish-project-alist' variable)."
 	      (if org-publish-rss-publish-immediately
 		  (org-publish-property :publishing-directory project)
 		(file-name-as-directory
-	         (org-publish-property :base-directory project))))))
+		 (org-publish-property :base-directory project))))))
 	(with-temp-buffer
 	  (insert rss)
 	  (when org-publish-rss-indent-xml
