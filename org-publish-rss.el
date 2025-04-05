@@ -8,9 +8,10 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.5
+;; Version: 0.6
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is *not* part of GNU Emacs.
 
@@ -159,7 +160,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.5")
+(defconst org-publish-rss-version "0.6")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -240,7 +241,7 @@ heading."
       (insert-file-contents file)
       (goto-char (point-min))
       (when (re-search-forward "^#\\+HTML_LINK_HOME:" (point-max) t)
-	(delete-line)
+	(delete-region (line-beginning-position) (line-end-position))
 	(goto-char (point-min)))
       (insert "#+HTML_LINK_HOME: " base-url "\n")
       (when top-only

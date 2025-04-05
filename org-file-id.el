@@ -1,9 +1,9 @@
 ;;; org-file-id.el --- Generate unique ID for Org files -*- lexical-binding: t -*-
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.1
-;; Package-Requires: (org)
+;; Version: 0.2
 ;; Keywords: org, identification
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not yet part of GNU Emacs
 
@@ -88,7 +88,7 @@ See `org-id-method' to customize how this ID is generated."
 	;; Position point and delete existing ID if FORCE.
 	;; Will use existing ID line position if one is found.
 	(if (not (eql (point) (point-min))) ;; Empty ID tag or FORCE
-	    (delete-line)
+	    (delete-region (line-beginning-position) (line-end-position))
 	  (progn
 	    (goto-char (point-min))
 	    (unless org-file-id-insert-top
