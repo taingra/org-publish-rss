@@ -65,15 +65,15 @@ options are:
   result in broken links.
 
 ** Optional Settings
-- :rss-guid :: (permalink/custom function) by default the file's
-  published permalink is used as the unique identifier for the RSS
-  feed.  Changes to the filename/URL will cause an article to show as
-  new in users' feed reader.  If you wish to use a unique ID tag
-  instead then set this to your preferred ID function.
+- :rss-guid :: (permalink/function) by default the file's published
+  permalink is used as the unique identifier in the RSS feed.  Changes
+  to the filename/URL will cause the file to show as new in feed
+  readers.
 
-  We provide a small package that can be used to generate unique file
-  IDs, see =org-file-id.el=.  To enable it set your =:rss-guid= or
-  =org-publish-rss-guid-method= to =org-file-id-get-create=.
+  To use a unique ID tag instead set this option to a custom function.
+  We provide a small package =org-file-id.el= that can be used to
+  generate unique IDs for files.  To enable it set your =:rss-guid=
+  or =org-publish-rss-guid-method= to =org-file-id-get-create=.
 
 - :rss-with-content :: (all/top/nil) If non-nil will generate RSS feed
   with exported HTML content of all files included.  Option "all" will
@@ -133,9 +133,11 @@ published by using: =org-publish-current-project= (C-c C-e P p).
 Using an Org exporter adds an additional export steps and
 configuration that is unnecessary for a basic project.
 
- - =Org project --[auto-sitemap]--> Generate Org sitemap --[ox-rss]--> Export sitemap to RSS=
+#+begin_src
+  Org project --[auto-sitemap]--> Org sitemap --[ox-rss]--> RSS
 
- - =Org project --[org-publish-rss]--> RSS feed=
+  Org project --[org-publish-rss]--> RSS
+#+end_src
 
 Plus adding specific RSS options to =org-publish-project-alist= makes
 RSS more easily configurable across multiple projects.
