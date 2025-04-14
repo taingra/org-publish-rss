@@ -292,6 +292,7 @@ heading."
 	 (or (org-publish-property :rss-file project)
 	     "rss.xml"))
 	(base-files (org-publish-rss--get-base-files project))
+	(base-extension (org-publish-property :base-extension project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
 	(guid-method
@@ -351,7 +352,7 @@ heading."
        (let* ((relpath
 	       (string-remove-prefix (expand-file-name base-dir) file))
 	      (file-url
-	       (concat url "/" (string-remove-suffix ".org" relpath) ".html"))
+	       (concat url "/" (string-remove-suffix base-extension relpath) "html"))
 	      (guid
 	       (pcase guid-method
 		 ('permalink file-url)
