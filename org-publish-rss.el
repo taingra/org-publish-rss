@@ -349,84 +349,78 @@ heading."
 	     org-publish-rss-guid-method))
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
-	     org-publish-rss-with-content))
-	(items-xml ""))
-    (unless (and title link description)
-      (error "RSS spec requires a title, link, and description"))
+	     org-publish-rss-with-content)))
+    ;; (unless (and title link description)
+    ;;   (error "RSS spec requires a title, link, and description"))
     (when (eq guid-method 'org-file-id-get-create)
       (require 'org-file-id))
-    (concat
-     (format
-      "<?xml version=\"1.0\" encoding=\"%s\"?>
-<rss version=\"2.0\"
- xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
- xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
- xmlns:dc=\"http://purl.org/dc/elements/1.1/\"
- xmlns:atom=\"http://www.w3.org/2005/Atom\"
- xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"
- xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\"
- xmlns:georss=\"http://www.georss.org/georss\"
- xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
- xmlns:media=\"http://search.yahoo.com/mrss/\">
-<channel>
-<atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />
-<title>%s</title>
-<link>%s</link>
-<description><![CDATA[%s]]></description>
-<language>%s</language>
-<lastBuildDate>%s</lastBuildDate>
-<generator>Emacs %s org-publish-rss.el %s</generator>\n"
-      (symbol-name org-html-coding-system)
-      (concat url "/" rss-file)
-      title
-      link
-      description
-      language
-      (format-time-string "%a, %d %b %Y %H:%M:%S %z")
-      emacs-version
-      org-publish-rss-version)
-     (when webmaster
-       (format "<webMaster>%s</webMaster>\n" webmaster))
-     (when editor
-       (format "<managingEditor>%s</managingEditor>\n" editor))
-     (when copyright
-       (format "<copyright>%s</copyright>" copyright))
-     (when image
-       (format
-	"<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
-	image title link))
-     ;; According to the RSS spec order does not matter so we
-     ;; do not need to waste effort here sorting items.
-     (dolist (file base-files items-xml)
-       (let* ((relpath
-	       (string-remove-prefix (expand-file-name base-dir) file))
-	      (file-url
-	       (concat url "/" (string-remove-suffix base-extension relpath) "html"))
-	      (guid
-	       (pcase guid-method
-		 ('permalink file-url)
-		 ((pred functionp)
-		  (funcall guid-method file))
-		 (_ (error "Invalid GUID generation method.")))))
-	 (setq items-xml
-	       (concat items-xml
-		       "<item>\n"
-		       (format
-			"<title>%s</title>\n<link>%s</link>\n<pubDate>%s</pubDate>\n<guid%s>%s</guid>\n"
-			(org-publish-find-title file project)
-			file-url
-			(format-time-string "%a, %d %b %Y %H:%M:%S %z"
-					    (org-publish-find-date file project))
-			(if (eq guid-method 'permalink)
-			    "" " isPermaLink=\"false\"")
-			guid)
-		       (when with-content
-			 (format "<description>\n<![CDATA[%s]]>\n</description>"
-			  (org-publish-rss--file-to-html
-			   file url (eq with-content 'top))))
-		       "</item>\n"))))
-     "</channel>\n"
-     "</rss>")))
+
+    ;; Setup RSS plist
+    (plist-put rss-plist :generator
+	       (format "Emacs %s org-publish-rss.el %s"
+		       emacs-version
+		       org-publish-rss-version))
+    (plist-put rss-plist :encoding
+	       (symbol-name org-html-coding-system))
+    (plist-put rss-plist :self-link
+	       (concat url "/" rss-file))
+    (plist-put rss-plist :title
+	       (or (org-publish-property :rss-title     project)
+		   (org-publish-property :sitemap-title project)
+		   (concat (car project) " RSS feed")))
+    (plist-put rss-plist :link
+	       (or (org-publish-property :rss-link       project)
+		   (org-publish-property :html-link-home project)))
+    (plist-put rss-plist :description
+	       (org-publish-property :rss-description project))
+    (plist-put rss-plist :webmaster
+	       (or (org-publish-property :rss-webmaster project)
+		   org-publish-rss-webmaster))
+    (plist-put rss-plist :editor
+	       (or  (org-publish-property :rss-editor project)
+		    org-publish-rss-editor))
+    (plist-put rss-plist :copyright
+	       (or (org-publish-property :rss-copyright project)
+		   org-publish-rss-copyright))
+    (plist-put rss-plist :image
+	       (org-publish-property :rss-image project))
+
+    ;; TODO GET LANGUAGE
+
+
+    (plist-put rss-plist :items
+	       (mapcar
+		(lambda (file)
+		  (let* ((relpath
+			  (string-remove-prefix (expand-file-name base-dir) file))
+			 (file-url
+			  ;; TODO disable if org-publish-attachment is the publishing function.
+			  (concat url "/" (string-remove-suffix base-extension relpath) "html"))
+			 (guid
+			  (pcase guid-method
+			    ('permalink nil)
+			    ((pred functionp)
+			     (funcall guid-method file))
+			    (_ (error "Invalid GUID generation method."))))
+			 (item-plist '()))
+
+		    (plist-put item-plist :title (org-publish-find-title file project))
+		    (plist-put item-plist :link file-url)
+		    (plist-put item-plist :date
+			       (format-time-string "%a, %d %b %Y %H:%M:%S %z"
+						   (org-publish-find-date file project)))
+		    (when guid
+		      (plist-put item-plist :guid guid))
+
+       		    (when with-content
+		      (plist-put item-plist :content
+				 (org-publish-rss--file-to-html
+				  file url (eq with-content 'top))))
+		    item-plist))
+		base-files))
+
+    (rss-builder rss-plist)))
+
 
 ;;;###autoload
 (defun org-publish-rss (project)
