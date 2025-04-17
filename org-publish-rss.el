@@ -255,10 +255,11 @@ heading."
 		       :html-link-use-abs-url t)))))
 
 (defun rss-builder (rss-plist)
-  "Create an RSS feed using a pre-defined RSS-PLIST."
+  "Create an RSS feed using a predefined RSS-PLIST."
   (concat
-   (format
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+   "<?xml version=\"1.0\" encoding=\""
+   (or (plist-get rss-plist :encoding) "utf-8")
+   "\"?>
 <rss version=\"2.0\"
  xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
  xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
@@ -269,85 +270,66 @@ heading."
  xmlns:georss=\"http://www.georss.org/georss\"
  xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
  xmlns:media=\"http://search.yahoo.com/mrss/\">
-<channel>
-<atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />
-<title>%s</title>
-<link>%s</link>
-<description><![CDATA[%s]]></description>
-<language>%s</language>
-<lastBuildDate>%s</lastBuildDate>
-<generator>Emacs %s rss.el %s</generator>\n"
-    (or (plist-get rss-plist :encoding) "utf-8")
-    (plist-get rss-plist :title)
-    (plist-get rss-plist :link)
-    (plist-get rss-plist :description)
-    (plist-get rss-plist :language)
-    (format-time-string "%a, %d %b %Y %H:%M:%S %z")
-    emacs-version
-    "0.1")
-	  (when (plist-member rss-plist :webmaster)
-	    (format "<webMaster>%s</webMaster>\n"
-		    (plist-get rss-plist :webmaster)))
-	  (when (plist-member rss-plist :editor)
-	    (format "<managingEditor>%s</managingEditor>\n"
-		    (plist-get rss-plist :editor)))
-	  (when (plist-member rss-plist :copyright)
-	    (format "<copyright>%s</copyright>"
-		    (plist-get rss-plist :copyright)))
-	  (when (plist-member rss-plist :image)
-	    (format
-	     "<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
-	     (plist-get rss-plist :image)
-	     (plist-get rss-plist :title)
-	     (plist-get rss-plist :link)))
-	  (mapconcat (lambda (item)
-		       (concat
-			"<item>"
-			"<title>"
-			(plist-get item :title)
-			"<title>"
-			"<pubDate>"
-			(plist-get item :date)
-			"</pubDate>"
-			"<link>"
-			(plist-get item :link)
-			"</link>"
-			(if (plist-member item :guid)
-			    (concat "<guid isPermaLink=\"false\">"
-				    (plist-get item :guid))
-			  (concat "<guid>"
-				  (plist-get item :link)))
-			"</guid>"
-			"</item>"))
-		     (plist-get rss-plist :items))))
+<channel>\n"
+   (when-let* ((self (plist-get rss-plist :self-link)))
+     (format "<atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />\n"
+	     self))
+     "<title>"
+     (plist-get rss-plist :title)
+     "</title>\n"
+    "<link>"
+     (plist-get rss-plist :link)
+     "</link>\n"
+     "<language>"
+     (plist-get rss-plist :language)
+     "</language>\n"
+     "<lastBuildDate>"
+     (format-time-string "%a, %d %b %Y %H:%M:%S %z")
+     "</lastBuildDate>\n"
+     "<generator>"
+     (or (plist-get rss-plist :generator)
+	(format "Emacs %s; rss.el %s" emacs-version "0.1"))
+     "</generator>\n"
+     "<description><![CDATA[" (plist-get rss-plist :description) "]]></description>\n"
+   (when-let* ((webmaster (plist-get rss-plist :webmaster)))
+     (concat "<webMaster>" webmaster "</webMaster>\n"))
+   (when-let* ((editor (plist-get rss-plist :editor)))
+     (concat "<managingEditor>" editor "</managingEditor>\n"))
+   (when-let* ((copyright (plist-get rss-plist :copyright)))
+     (concat "<copyright>" copyright "</copyright>\n"))
+   (when-let* ((image (plist-get rss-plist :image)))
+     (concat
+      "<image>\n<url>"
+      image
+      "</url>\n<title>"
+      (plist-get rss-plist :title)
+      "</title>\n<link>"
+      (plist-get rss-plist :link)
+      "</link>\n</image>\n"))
+   (mapconcat
+    (lambda (item)
+      (concat
+       "<item>\n"
+       "<title>"
+       (plist-get item :title)
+       "<title>\n"
+       "<pubDate>"
+       (plist-get item :date)
+       "</pubDate>\n"
+       "<link>"
+       (plist-get item :link)
+       "</link>\n"
+       (if-let* ((guid (plist-get item :guid)))
+	   (concat "<guid isPermaLink=\"false\">" guid)
+	 (concat "<guid>" (plist-get item :link)))
+       "</guid>\n"
+       "</item>\n"))
+    (plist-get rss-plist :items))))
 
 
 (defun org-publish-rss--builder (project)
   "Generate RSS feed XML for a PROJECT."
-  (let ((title
-	 (or (org-publish-property :rss-title     project)
-	     (org-publish-property :sitemap-title project)
-	     (concat (car project) " RSS feed")))
-	(link
-	 (or (org-publish-property :rss-link       project)
-	     (org-publish-property :html-link-home project)))
-	(description (org-publish-property :rss-description project))
-	(language
-	 (or (org-publish-property :language project)
-	     org-export-default-language))
-	(webmaster
-	 (or
-	  (org-publish-property :rss-webmaster project)
-	  org-publish-rss-webmaster))
-	(editor
-	 (or
-	  (org-publish-property :rss-editor project)
-	  org-publish-rss-editor))
-	(copyright
-	 (or
-	  (org-publish-property :rss-copyright project)
-	  org-publish-rss-copyright))
-	(image (org-publish-property :rss-image project))
+  (let ((rss-plist '())
 	(url
 	 (string-trim-right
 	  (or (org-publish-property :rss-root-url   project)
