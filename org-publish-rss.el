@@ -254,77 +254,7 @@ heading."
 		       :with-footnotes ,with-footnotes
 		       :html-link-use-abs-url t)))))
 
-(defun rss-builder (rss-plist)
-  "Create an RSS feed using a predefined RSS-PLIST."
-  (concat
-   "<?xml version=\"1.0\" encoding=\""
-   (or (plist-get rss-plist :encoding) "utf-8")
-   "\"?>
-<rss version=\"2.0\"
- xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"
- xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"
- xmlns:dc=\"http://purl.org/dc/elements/1.1/\"
- xmlns:atom=\"http://www.w3.org/2005/Atom\"
- xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"
- xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\"
- xmlns:georss=\"http://www.georss.org/georss\"
- xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\"
- xmlns:media=\"http://search.yahoo.com/mrss/\">
-<channel>\n"
-   (when-let* ((self (plist-get rss-plist :self-link)))
-     (format "<atom:link href=\"%s\" rel=\"self\" type=\"application/rss+xml\" />\n"
-	     self))
-     "<title>"
-     (plist-get rss-plist :title)
-     "</title>\n"
-    "<link>"
-     (plist-get rss-plist :link)
-     "</link>\n"
-     "<language>"
-     (plist-get rss-plist :language)
-     "</language>\n"
-     "<lastBuildDate>"
-     (format-time-string "%a, %d %b %Y %H:%M:%S %z")
-     "</lastBuildDate>\n"
-     "<generator>"
-     (or (plist-get rss-plist :generator)
-	(format "Emacs %s; rss.el %s" emacs-version "0.1"))
-     "</generator>\n"
-     "<description><![CDATA[" (plist-get rss-plist :description) "]]></description>\n"
-   (when-let* ((webmaster (plist-get rss-plist :webmaster)))
-     (concat "<webMaster>" webmaster "</webMaster>\n"))
-   (when-let* ((editor (plist-get rss-plist :editor)))
-     (concat "<managingEditor>" editor "</managingEditor>\n"))
-   (when-let* ((copyright (plist-get rss-plist :copyright)))
-     (concat "<copyright>" copyright "</copyright>\n"))
-   (when-let* ((image (plist-get rss-plist :image)))
-     (concat
-      "<image>\n<url>"
-      image
-      "</url>\n<title>"
-      (plist-get rss-plist :title)
-      "</title>\n<link>"
-      (plist-get rss-plist :link)
-      "</link>\n</image>\n"))
-   (mapconcat
-    (lambda (item)
-      (concat
-       "<item>\n"
-       "<title>"
-       (plist-get item :title)
-       "<title>\n"
-       "<pubDate>"
-       (plist-get item :date)
-       "</pubDate>\n"
-       "<link>"
-       (plist-get item :link)
-       "</link>\n"
-       (if-let* ((guid (plist-get item :guid)))
-	   (concat "<guid isPermaLink=\"false\">" guid)
-	 (concat "<guid>" (plist-get item :link)))
-       "</guid>\n"
-       "</item>\n"))
-    (plist-get rss-plist :items))))
+
 
 
 (defun org-publish-rss--builder (project)
