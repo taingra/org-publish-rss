@@ -125,17 +125,13 @@ Expects plist in the following format:
      (or (plist-get rss-plist :generator)
 	 (format "Emacs %s; rss.el %s" emacs-version "0.1"))
      "</generator>\n"
-     (when (and (plist-member rss-plist :webmaster)
-		(not (string-empty-p (plist-get rss-plist :webmaster))))
+     (when (plist-member rss-plist :webmaster)
        (concat "<webMaster>" (plist-get rss-plist :webmaster) "</webMaster>\n"))
-     (when (and (plist-member rss-plist :editor)
-		(not (string-empty-p (plist-get rss-plist :editor))))
+     (when (plist-member rss-plist :editor)
        (concat "<managingEditor>" (plist-get rss-plist :editor) "</managingEditor>\n"))
-     (when (and (plist-member rss-plist :copyright)
-		(not (string-empty-p (plist-get rss-plist :copyright))))
+     (when (plist-member rss-plist :copyright)
        (concat "<copyright>" (plist-get rss-plist :copyright) "</copyright>\n"))
-     (when (and (plist-member rss-plist :image)
-		(not (string-empty-p (plist-get rss-plist :image))))
+     (when (plist-member rss-plist :image)
        (format "<image>\n<url>%s</url>\n<title>%s</title>\n<link>%s</link>\n</image>\n"
 	       (plist-get rss-plist :image)
 	       (plist-get rss-plist :title)
@@ -154,15 +150,13 @@ Expects plist in the following format:
 	      "<link>"
 	      (plist-get item :link)
 	      "</link>\n"
-	      (if (and (plist-member rss-plist :guid)
-		       (not (string-empty-p (plist-get rss-plist :guid))))
+	      (if (plist-member rss-plist :guid)
 		  (concat "<guid isPermaLink=\"false\">" (plist-get item :guid))
 		(concat "<guid>" (plist-get item :link)))
 	      "</guid>\n"
-	      (when (and (plist-member rss-plist :content)
-			 (not (string-empty-p (plist-get rss-plist :content))))
-		"<description>\n<![CDATA[%s]]>\n</description>\n"
-		(plist-get item :content))
+	      (when (plist-member rss-plist :content)
+		(format "<description>\n<![CDATA[%s]]>\n</description>\n"
+			(plist-get item :content)))
 	      "</item>\n")))
      "</channel>\n</rss>\n")))
 
