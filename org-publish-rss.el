@@ -159,6 +159,7 @@
 
 (require 'ox-publish)
 (require 'ox-html)
+(require 'rss)
 
 (defconst org-publish-rss-version "0.6")
 
@@ -254,11 +255,8 @@ heading."
 		       :with-footnotes ,with-footnotes
 		       :html-link-use-abs-url t)))))
 
-
-
-
 (defun org-publish-rss--builder (project)
-  "Generate RSS feed XML for a PROJECT."
+  "Generate RSS feed XML for a PROJECT alist."
   (let ((rss-plist '())
 	(url
 	 (string-trim-right
@@ -271,7 +269,6 @@ heading."
 	 (or (org-publish-property :rss-file project)
 	     "rss.xml"))
 	(base-files (org-publish-rss--get-base-files project))
-	(base-extension (org-publish-property :base-extension project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
 	(guid-method
@@ -280,76 +277,92 @@ heading."
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
 	     org-publish-rss-with-content)))
-    ;; (unless (and title link description)
-    ;;   (error "RSS spec requires a title, link, and description"))
+
     (when (eq guid-method 'org-file-id-get-create)
       (require 'org-file-id))
 
     ;; Setup RSS plist
-    (plist-put rss-plist :generator
-	       (format "Emacs %s org-publish-rss.el %s"
-		       emacs-version
-		       org-publish-rss-version))
-    (plist-put rss-plist :encoding
-	       (symbol-name org-html-coding-system))
-    (plist-put rss-plist :self-link
-	       (concat url "/" rss-file))
-    (plist-put rss-plist :title
-	       (or (org-publish-property :rss-title     project)
-		   (org-publish-property :sitemap-title project)
-		   (concat (car project) " RSS feed")))
-    (plist-put rss-plist :link
-	       (or (org-publish-property :rss-link       project)
-		   (org-publish-property :html-link-home project)))
-    (plist-put rss-plist :description
-	       (org-publish-property :rss-description project))
-    (plist-put rss-plist :webmaster
-	       (or (org-publish-property :rss-webmaster project)
-		   org-publish-rss-webmaster))
-    (plist-put rss-plist :editor
-	       (or  (org-publish-property :rss-editor project)
-		    org-publish-rss-editor))
-    (plist-put rss-plist :copyright
-	       (or (org-publish-property :rss-copyright project)
-		   org-publish-rss-copyright))
-    (plist-put rss-plist :image
-	       (org-publish-property :rss-image project))
+    (setq rss-plist
+	  (plist-put rss-plist :generator
+		     (format "Emacs %s org-publish-rss.el %s"
+			     emacs-version
+			     org-publish-rss-version)))
+    (setq rss-plist
+	  (plist-put rss-plist :encoding
+		     (symbol-name org-html-coding-system)))
+    (setq rss-plist
+	  (plist-put rss-plist :self-link
+		     (concat url "/" rss-file)))
+    (setq rss-plist
+	  (plist-put rss-plist :title
+		     (or (org-publish-property :rss-title     project)
+			 (org-publish-property :sitemap-title project)
+			 (concat (car project) " RSS feed"))))
+    (setq rss-plist
+	  (plist-put rss-plist :link
+		     (or (org-publish-property :rss-link       project)
+			 (org-publish-property :html-link-home project))))
+    (setq rss-plist
+	  (plist-put rss-plist :description
+		     (or (org-publish-property :rss-description project)
+			 (concat (car project) " RSS feed"))))
+    (setq rss-plist
+	  (plist-put rss-plist :language
+		     (or (org-publish-property :language project)
+			 org-export-default-language)))
+    (when (or (org-publish-property :rss-webmaster project)
+	      org-publish-rss-webmaster)
+      (setq rss-plist
+	    (plist-put rss-plist :webmaster
+		       (or (org-publish-property :rss-webmaster project)
+			   org-publish-rss-webmaster))))
+    (when (or (org-publish-property :rss-editor project)
+	      org-publish-rss-editor)
+      (setq rss-plist
+	    (plist-put rss-plist :editor
+		       (or  (org-publish-property :rss-editor project)
+			    org-publish-rss-editor))))
+    (when (or (org-publish-property :rss-copyright project)
+	      org-publish-rss-copyright)
+      (setq rss-plist
+	    (plist-put rss-plist :copyright
+		       (or (org-publish-property :rss-copyright project)
+			   org-publish-rss-copyright))))
+    (when (org-publish-property :rss-image project)
+      (setq rss-plist
+	    (plist-put rss-plist :image
+		       (org-publish-property :rss-image project))))
 
-    ;; TODO GET LANGUAGE
+    (dolist (file base-files)
+      (let ((item-plist '()))
+	(setq item-plist
+	      ;; FIXME cache hash-table-p error
+	      (plist-put item-plist :title (org-publish-find-title file project)))
+	;; TODO disable file rename if org-publish-attachment used.
+	(setq item-plist
+	      (plist-put item-plist :link
+			 (concat url "/" (file-name-sans-extension
+					  (file-relative-name file base-dir))
+				 ".html")))
+	(setq item-plist
+	      (plist-put item-plist :date
+			 ;; FIXME cache hash-table-p error
+			 (rss-time-string (org-publish-find-date file project))))
 
+	(unless (eq guid-method 'permalink)
+	  (setq item-plist
+		(plist-put item-plist :guid (funcall guid-method file))))
 
-    (plist-put rss-plist :items
-	       (mapcar
-		(lambda (file)
-		  (let* ((relpath
-			  (string-remove-prefix (expand-file-name base-dir) file))
-			 (file-url
-			  ;; TODO disable if org-publish-attachment is the publishing function.
-			  (concat url "/" (string-remove-suffix base-extension relpath) "html"))
-			 (guid
-			  (pcase guid-method
-			    ('permalink nil)
-			    ((pred functionp)
-			     (funcall guid-method file))
-			    (_ (error "Invalid GUID generation method."))))
-			 (item-plist '()))
+       	(when with-content
+	  (setq item-plist
+		(plist-put item-plist :content
+			   (org-publish-rss--file-to-html file url (eq with-content 'top)))))
 
-		    (plist-put item-plist :title (org-publish-find-title file project))
-		    (plist-put item-plist :link file-url)
-		    (plist-put item-plist :date
-			       (format-time-string "%a, %d %b %Y %H:%M:%S %z"
-						   (org-publish-find-date file project)))
-		    (when guid
-		      (plist-put item-plist :guid guid))
+	(setq rss-plist
+	      (plist-put rss-plist :items
+			 (cons item-plist (plist-get rss-plist :items))))))
 
-       		    (when with-content
-		      (plist-put item-plist :content
-				 (org-publish-rss--file-to-html
-				  file url (eq with-content 'top))))
-		    item-plist))
-		base-files))
-
-    (rss-builder rss-plist)))
+    (rss-to-xml rss-plist)))
 
 
 ;;;###autoload
