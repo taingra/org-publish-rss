@@ -51,15 +51,26 @@
 ;;   :copyright "Copyright (C) 2025 ME"
 ;;   :image     "http://example.com/feed-image.png"
 ;;   :items ((:title "my article"
-;; 	   :date "2025-05-02"
-;; 	   :link "http://example/article-1")
-;; 	  (:title "my article 2"
-;; 	   :date "2025-01-02"
-;; 	   :link "http://example/article-2")))
+;; 	      :date "2025-05-02"
+;; 	      :link "http://example/article-1")
+;; 	     (:title "my article 2"
+;; 	      :date "2025-01-02"
+;; 	      :link "http://example/article-2")))
 
 
 ;;; Code:
 
+
+(defsubst rss-time-string (&optional time zone)
+  "Format TIME in RFC822 format expected by RSS.
+If TIME is nil or omitted the current time is used.
+
+The optional ZONE is omitted or nil for Emacs local time, t for
+Universal Time, ‘wall’ for system wall clock time, or a string as in
+the TZ environment variable.  It can also be a list (as from
+‘current-time-zone’) or an integer (as from ‘decode-time’) applied
+without consideration for daylight saving time."
+  (format-time-string "%a, %d %b %Y %H:%M:%S %z" time zone))
 
 
 ;; TODO create function validates and serialize inputs
