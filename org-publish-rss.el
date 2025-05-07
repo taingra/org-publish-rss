@@ -8,7 +8,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.6
+;; Version: 0.7
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 ;; Package-Requires: ((emacs "28.1"))
@@ -160,7 +160,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.6")
+(defconst org-publish-rss-version "0.7")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -292,7 +292,6 @@ heading."
 	 (or (org-publish-property :rss-file project)
 	     "rss.xml"))
 	(base-files (org-publish-rss--get-base-files project))
-	(base-extension (org-publish-property :base-extension project))
 	(base-dir (file-name-as-directory
 		   (org-publish-property :base-directory project)))
 	(guid-method
@@ -349,10 +348,12 @@ heading."
      ;; According to the RSS spec order does not matter so we
      ;; do not need to waste effort here sorting items.
      (dolist (file base-files items-xml)
-       (let* ((relpath
-	       (string-remove-prefix (expand-file-name base-dir) file))
-	      (file-url
-	       (concat url "/" (string-remove-suffix base-extension relpath) "html"))
+       (let* ((file-url
+	       (concat url "/" (file-name-sans-extension
+				(file-relative-name file base-dir))
+		       (if (string-equal "org" (file-name-extension file))
+			 ".html"
+			 (file-name-extension file t))))
 	      (guid
 	       (pcase guid-method
 		 ('permalink file-url)
