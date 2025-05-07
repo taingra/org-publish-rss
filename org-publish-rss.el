@@ -220,13 +220,15 @@ Exclude the `:auto-sitemap' and `:makeindex' files."
 	  (or (org-publish-property :rss-filter-function project) (lambda (_fn) t)))
 	 (base-files (seq-filter filter-fn (org-publish-get-base-files project))))
     (when (org-publish-property :auto-sitemap project)
-      (delete (expand-file-name
-	       (or (org-publish-property :sitemap-filename project)
-		   "sitemap.org")
-	       base-dir)
-	      base-files))
+      (setq base-files
+	    (remove (expand-file-name
+		     (or (org-publish-property :sitemap-filename project)
+			 "sitemap.org")
+		     base-dir)
+		    base-files)))
     (when (org-publish-property :makeindex project)
-      (delete (expand-file-name "theindex.org" base-dir) base-files))
+      (setq base-files
+	    (remove (expand-file-name "theindex.org" base-dir) base-files)))
     base-files))
 
 (defun org-publish-rss--file-to-html (file base-url &optional top-only)
