@@ -354,8 +354,13 @@ heading."
 	       (concat url "/" (file-name-sans-extension
 				(file-relative-name file base-dir))
 		       (if (string-equal "org" (file-name-extension file))
-			 ".html"
+			   ".html"
 			 (file-name-extension file t))))
+	      (file-base-dir-url
+	       (concat url "/" (directory-file-name
+				(or (file-relative-name
+				     (file-name-directory file) base-dir)
+				    ""))))
 	      (guid
 	       (pcase guid-method
 		 ('permalink file-url)
@@ -377,7 +382,7 @@ heading."
 		       (when with-content
 			 (format "<description>\n<![CDATA[%s]]>\n</description>"
 			  (org-publish-rss--file-to-html
-			   file url (eq with-content 'top))))
+			   file file-base-dir-url (eq with-content 'top))))
 		       "</item>\n"))))
      "</channel>\n"
      "</rss>")))
