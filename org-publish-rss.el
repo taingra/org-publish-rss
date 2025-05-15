@@ -8,7 +8,7 @@
 ;; This package reuses some code from ox-publish.el and ox-rss.el.
 
 ;; Author: Thomas Ingram <thomas@taingram.org>
-;; Version: 0.7
+;; Version: 0.8
 ;; Homepage: https://git.sr.ht/~taingram/org-publish-rss
 ;; Keywords: org, publishing, rss
 ;; Package-Requires: ((emacs "28.1"))
@@ -160,7 +160,7 @@
 (require 'ox-publish)
 (require 'ox-html)
 
-(defconst org-publish-rss-version "0.7")
+(defconst org-publish-rss-version "0.8")
 
 (defgroup org-publish-rss nil
   "Org publish with automatic RSS Feed."
@@ -356,11 +356,13 @@ heading."
 		       (if (string-equal "org" (file-name-extension file))
 			   ".html"
 			 (file-name-extension file t))))
+	      (file-base-dir
+	       (file-relative-name
+		(file-name-directory file) base-dir))
 	      (file-base-dir-url
-	       (concat url "/" (directory-file-name
-				(or (file-relative-name
-				     (file-name-directory file) base-dir)
-				    ""))))
+	       (concat url "/"
+		       (unless (string-equal file-base-dir "./")
+			 file-base-dir)))
 	      (guid
 	       (pcase guid-method
 		 ('permalink file-url)
