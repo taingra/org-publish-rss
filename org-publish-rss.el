@@ -302,7 +302,8 @@ heading."
 	(with-content
 	 (or (org-publish-property :rss-with-content project)
 	     org-publish-rss-with-content))
-	(items-xml ""))
+	(items-xml "")
+        (system-time-locale "C"))
     (unless (and title link description)
       (error "RSS spec requires a title, link, and description"))
     (when (eq guid-method 'org-file-id-get-create)
