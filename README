@@ -16,7 +16,7 @@ Org publish websites.
 
 #+begin_src emacs-lisp
   (use-package org-publish-rss
-    :vc (:url "https://git.sr.ht/~taingram/org-publish-rss.git"
+    :vc (:url "https://git.sr.ht/~taingram/org-publish-rss"
          :rev :newest))
 #+end_src
 
